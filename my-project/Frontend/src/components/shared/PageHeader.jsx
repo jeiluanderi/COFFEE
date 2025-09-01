@@ -1,0 +1,34 @@
+import React from 'react';
+import coffeeHeaderBackground from '../../assets/img/coff.jpg'
+const PageHeader = ({ title, activePage }) => {
+    // Assuming a coffee-themed background image for consistency
+
+    const backgroundStyle = {
+        backgroundImage: `url(${coffeeHeaderBackground})`,
+        backgroundSize: 'contain',
+        backgroundPosition: 'center center',
+        backgroundAttachment: 'fixed', // This creates the parallax effect
+    };
+
+    // Define the color for the active breadcrumb item
+    const activeBreadcrumbColor = ' #F8F5EB'; // Dark coffee brown for contrast
+
+    return (
+        <div className="container-fluid page-header py-5 mb-5 wow fadeIn" data-wow-delay="0.1s" style={backgroundStyle}>
+            <div className="container text-center py-5">
+                <h1 className="display-3 text-white mb-4 animated slideInDown">{title}</h1>
+                <nav aria-label="breadcrumb animated slideInDown">
+                    <ol className="breadcrumb justify-content-center mb-0">
+                        <li className="breadcrumb-item"><a href="#" className="text-white">Home</a></li> {/* Added text-white for visibility */}
+                        <li className="breadcrumb-item"><a href="#" className="text-white">Shop</a></li> {/* Added text-white for visibility */}
+                        <li className="breadcrumb-item active" aria-current="page" style={{ color: activeBreadcrumbColor, fontWeight: 'bold' }}>
+                            {activePage}
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    );
+};
+
+export default PageHeader;

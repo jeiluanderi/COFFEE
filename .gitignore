@@ -1,0 +1,30 @@
+# Ignore all node_modules folders wherever they are found
+node_modules/
+
+# Ignore common build and temporary directories
+dist/
+build/
+.parcel-cache/
+.env
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and npm debug files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

@@ -1,0 +1,103 @@
+/* Import the Inter font for a modern look */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* --- Basic Root Styles for the entire HTML document and React root --- */
+html,
+body,
+#root {
+  height: 100%;
+  /* Ensures the root elements fill the viewport height */
+  margin: 0;
+  /* Removes default browser margin */
+  padding: 0;
+  /* Removes default browser padding */
+  box-sizing: border-box;
+  /* Includes padding and border in the element's total width and height */
+}
+
+/* --- Set a default font and text rendering for the whole body --- */
+body {
+  font-family: "Inter", sans-serif;
+  /* Applies the Inter font throughout the app */
+  -webkit-font-smoothing: antialiased;
+  /* Improves font rendering on macOS/iOS */
+  -moz-osx-font-smoothing: grayscale;
+  /* Improves font rendering on Firefox */
+  line-height: 1.5;
+  /* Standard line height for readability */
+  color: #333;
+  /* Default dark text color */
+  background-color: #f8f9fa;
+  /* A light, neutral background for the entire page */
+}
+
+/* --- Simple Link Styling --- */
+a {
+  color: inherit;
+  /* Inherit color from parent */
+  text-decoration: none;
+  /* Remove underline by default */
+}
+
+a:hover {
+  text-decoration: underline;
+  /* Add underline on hover for better UX */
+}
+
+/* --- Basic List Resets --- */
+ul {
+  list-style: none;
+  /* Remove bullet points from lists */
+  padding: 0;
+  /* Remove default padding */
+  margin: 0;
+  /* Remove default margin */
+}
+
+/* --- Utility classes (if not using a full CSS framework like Tailwind globally) --- */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+  /* 16px */
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+  /* 16px */
+}
+
+.py-3 {
+  padding-top: 0.75rem;
+  /* 12px */
+  padding-bottom: 0.75rem;
+  /* 12px */
+}
+
+.px-4 {
+  padding-left: 1rem;
+  /* 16px */
+  padding-right: 1rem;
+  /* 16px */
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* Placeholder for responsive adjustments if needed across the app */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}

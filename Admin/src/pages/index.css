@@ -1,0 +1,443 @@
+/* Import the Inter font for a modern look */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* --- Basic Root Styles for the entire HTML document and React root --- */
+html,
+body,
+#root {
+    height: 100%;
+    /* Ensures the root elements fill the viewport height */
+    margin: 0;
+    /* Removes default browser margin */
+    padding: 0;
+    /* Removes default browser padding */
+    box-sizing: border-box;
+    /* Includes padding and border in the element's total width and height */
+}
+
+/* --- Set a default font and text rendering for the whole body --- */
+body {
+    font-family: "Inter", sans-serif;
+    /* Applies the Inter font throughout the app */
+    -webkit-font-smoothing: antialiased;
+    /* Improves font rendering on macOS/iOS */
+    -moz-osx-font-smoothing: grayscale;
+    /* Improves font rendering on Firefox */
+    line-height: 1.5;
+    /* Standard line height for readability */
+    color: #36220B;
+    /* Dark coffee bean color for default text */
+    background-color: #F8F5EB;
+    /* Creamy white background for the entire page */
+}
+
+/* --- Simple Link Styling --- */
+a {
+    color: inherit;
+    /* Inherit color from parent */
+    text-decoration: none;
+    /* Remove underline by default */
+}
+
+a:hover {
+    text-decoration: underline;
+    /* Add underline on hover for better UX */
+}
+
+/* --- Basic List Resets --- */
+ul {
+    list-style: none;
+    /* Remove bullet points from lists */
+    padding: 0;
+    /* Remove default padding */
+    margin: 0;
+    /* Remove default margin */
+}
+
+/* --- Enhanced Utility & Component Styling for Admin Panel --- */
+
+/* General Card Styling */
+.card {
+    background-color: white;
+    border-radius: 12px;
+    /* Slightly larger rounded corners for a softer look */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    /* More prominent shadow */
+    padding: 24px;
+    /* Increased padding */
+    margin-bottom: 24px;
+    /* Consistent margin */
+    transition: transform 0.2s ease-in-out;
+    /* Smooth hover effect */
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    /* Lift card slightly on hover */
+}
+
+/* Specific Card Headers for lists/charts */
+.list-header,
+.analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    /* Increased spacing */
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    /* Light separator */
+}
+
+.list-header h3,
+.analytics-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #36220B;
+    /* Dark coffee bean for headings */
+}
+
+.list-header a,
+.analytics-header .timeframe-selector button {
+    color: #8B4513;
+    /* Saddle Brown for links/buttons */
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.list-header a:hover {
+    color: #6F4E37;
+    /* Coffee Brown on hover */
+    text-decoration: underline;
+}
+
+/* List Item Styling */
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Space between list items */
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f4f8;
+    /* Very light separator */
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    display: flex;
+    align-items: center;
+}
+
+.item-id-badge {
+    background-color: #F8F5EB;
+    /* Creamy white background */
+    color: #6F4E37;
+    /* Coffee Brown text */
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.item-details h4 {
+    font-size: 1em;
+    font-weight: 600;
+    color: #36220B;
+    margin: 0;
+}
+
+.item-details span {
+    font-size: 0.85em;
+    color: #6F4E37;
+    /* Coffee Brown for secondary text */
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: capitalize;
+    min-width: 90px;
+    /* Ensure consistent width */
+    text-align: center;
+}
+
+.status-badge.in-progress {
+    background-color: #ffedb3;
+    color: #cc8400;
+}
+
+/* Yellowish */
+.status-badge.ready {
+    background-color: #b3ecb3;
+    color: #007f00;
+}
+
+/* Greenish */
+.status-badge.completed {
+    background-color: #cce0ff;
+    color: #004d99;
+}
+
+/* Bluish */
+.status-badge.pending {
+    background-color: #ffe0b2;
+    color: #e65100;
+}
+
+/* Orangeish */
+.status-badge.paid {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Light Green */
+.status-badge.unpaid {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Light Red */
+
+
+/* Buttons */
+.delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    /* Red for delete */
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #f8d7da;
+    color: #c82333;
+}
+
+.submit-btn {
+    background-color: #8B4513;
+    /* Saddle Brown */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: #6F4E37;
+    /* Darker brown on hover */
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Modal Specific Styles (if modals are still using these global styles) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+}
+
+.modal-header h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #36220B;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6F4E37;
+    transition: color 0.2s;
+    padding: 0;
+}
+
+.modal-close-btn:hover {
+    color: #dc3545;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #36220B;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #8B4513;
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.2);
+    outline: none;
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.space-x-2>*:not(:first-child) {
+    margin-left: 0.5rem;
+}
+
+.text-red-500 {
+    color: #dc3545;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        font-size: 15px;
+        /* Slightly larger base font on smaller screens */
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .list-header h3,
+    .analytics-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 5px 8px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.4rem;
+    }
+}
