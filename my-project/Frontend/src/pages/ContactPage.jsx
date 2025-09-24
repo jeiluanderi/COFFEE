@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/Contact/PageHeader';
-import Spinner from '../components/shared/Spinner';
+// import PageHeader from '../components/Shared/PageHeader';
+import Spinner from '../components/Shared/Spinner';
 import ContactSection from '../components/Contact/ContactSection';
 
 const ContactPage = () => {
@@ -21,7 +21,7 @@ const ContactPage = () => {
                 <Spinner />
             ) : (
                 <>
-                    <PageHeader title="Contact Us" activePage="Contact" />
+                    {/* <PageHeader title="Contact Us" activePage="Contact" /> */}
                     <ContactSection />
                 </>
             )}

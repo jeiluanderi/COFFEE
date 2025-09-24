@@ -1,0 +1,249 @@
+/* src/pages/AdminInquiriesPage.css */
+
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.list-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-container input {
+    padding: 0.5rem 0.5rem 0.5rem 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid #d1d5db;
+    width: 300px;
+}
+
+.search-container .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+}
+
+.card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1.5fr 1fr 1fr;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 1rem;
+}
+
+.inquiries-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.inquiry-item {
+    background-color: #f9fafb;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.inquiry-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.inquiry-summary {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1.5fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: center;
+}
+
+.inquiry-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.action-btn.resolve-btn {
+    color: #10b981;
+}
+
+.action-btn.delete-btn {
+    color: #ef4444;
+}
+
+.action-btn.view-btn {
+    color: #3b82f6;
+}
+
+.action-btn.resolve-btn:hover {
+    background-color: #d1fae5;
+}
+
+.action-btn.delete-btn:hover {
+    background-color: #fee2e2;
+}
+
+.action-btn.view-btn:hover {
+    background-color: #dbeafe;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-resolved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-new {
+    background-color: #fce7f3;
+    color: #be185d;
+}
+
+.status-default {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: #4B5563;
+}
+
+.pagination-btn:hover:not(.active) {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+}
+
+.pagination-btn.active {
+    background-color: #6F4E37;
+    color: white;
+    border-color: #6F4E37;
+    pointer-events: none;
+}
+
+.pagination-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background-color: #f9fafb;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+}
+
+.close-btn:hover {
+    color: #6b7280;
+}
+
+.modal-body p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.modal-message-box {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}

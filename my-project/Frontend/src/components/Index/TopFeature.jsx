@@ -1,26 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const featureData = [
-    {
-        iconClass: 'fa fa-wifi text-primary',
-        title: 'Free WiFi',
-        description: 'Stay connected while you sip on your favorite brew.',
-        delay: '0.1s'
-    },
-    {
-        iconClass: 'fa fa-mug-hot text-primary',
-        title: 'Cozy Atmosphere',
-        description: 'A perfect place to relax, work, or meet friends.',
-        delay: '0.3s'
-    },
-    {
-        iconClass: 'fa fa-coffee text-primary',
-        title: 'Premium Beans',
-        description: 'Enjoy high-quality, ethically sourced coffee.',
-        delay: '0.5s'
-    }
-];
-
+// Reusable components (no changes needed here)
 const FeatureCard = ({ iconClass, title, description, delay }) => (
     <div className="col-lg-4 wow fadeIn" data-wow-delay={delay}>
         <div className="bg-white shadow d-flex align-items-center h-100 px-5" style={{ minHeight: '160px' }}>
@@ -38,17 +18,70 @@ const FeatureCard = ({ iconClass, title, description, delay }) => (
 );
 
 const TopFeature = () => {
+    const [features, setFeatures] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchFeatures = async () => {
+            try {
+                // Fetch data from the new backend API endpoint
+                const response = await fetch('http://localhost:3001/api/features');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setFeatures(data);
+            } catch (err) {
+                console.error("Failed to fetch features:", err);
+                setError("Failed to load features. Please check the server connection.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchFeatures();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="container-fluid top-feature py-5 pt-lg-0">
+                <div className="container py-5 pt-lg-0">
+                    <div className="row gx-0">
+                        <div className="text-center w-full">
+                            <p className="text-xl">Loading features...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container-fluid top-feature py-5 pt-lg-0">
+                <div className="container py-5 pt-lg-0">
+                    <div className="row gx-0">
+                        <div className="text-center w-full">
+                            <p className="text-xl text-red-600">{error}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container-fluid top-feature py-5 pt-lg-0">
             <div className="container py-5 pt-lg-0">
                 <div className="row gx-0">
-                    {featureData.map((feature, index) => (
+                    {features.map((feature, index) => (
                         <FeatureCard
-                            key={index}
-                            iconClass={feature.iconClass}
-                            title={feature.title}
-                            description={feature.description}
-                            delay={feature.delay}
+                            key={feature.id}
+                            iconClass={feature.icon_class}
+                            title={feature.feature_title}
+                            description={feature.feature_description}
+                            delay={`${(index * 0.2) + 0.1}s`}
                         />
                     ))}
                 </div>

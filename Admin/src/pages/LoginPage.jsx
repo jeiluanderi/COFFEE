@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
-// import "./LoginPage.css"; // Removed: Styling is handled internally
 
-// Assuming your admin background image is imported relative to LoginPage.jsx
-import backgroundImage from '../assets/coff.jpg';
+// Placeholder for the background image. Replace with a valid URL or local asset in a real project.
+const backgroundImage = "https://res.cloudinary.com/dmranuiwo/image/upload/v1757076175/coff_to94lp.png";
 
+// The component now accepts `onLogin` as a prop from the parent App component
 const LoginPage = ({ onLogin }) => {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isRegistering, setIsRegistering] = useState(false);
     const [message, setMessage] = useState("");
     const [isError, setIsError] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,40 +18,39 @@ const LoginPage = ({ onLogin }) => {
         setIsError(false);
         setIsSubmitting(true);
 
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-        const url = isRegistering
-            ? `${backendUrl}/api/register`
-            : `${backendUrl}/api/login`;
+        const backendUrl = 'http://localhost:3001';
 
         try {
-            const payload = {
-                email: username, // Using username input as email for backend
-                password: password
-            };
-            if (isRegistering) {
-                payload.username = username; // Include username for registration
-            }
-
-            const response = await axios.post(url, payload);
+            const response = await axios.post(`${backendUrl}/api/login`, { email, password });
 
             if (response.data.token) {
+                const userRole = response.data.user.role;
+
+                if (userRole !== 'admin') {
+                    setIsError(true);
+                    setMessage("Access denied: Admins only.");
+                    setIsSubmitting(false);
+                    return;
+                }
+
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("username", response.data.user.username);
-                localStorage.setItem("userRole", response.data.user.role); // Store user role
+                localStorage.setItem("userRole", userRole);
 
-                if (onLogin) onLogin(response.data.token);
+                // ⭐ THIS IS THE CRITICAL FIX ⭐
+                // We are now calling the 'onLogin' prop, passing the token back to the parent component.
+                if (onLogin) {
+                    onLogin(response.data.token);
+                }
 
-                setMessage(response.data.message || "Success");
+                setMessage("Login successful");
             } else {
                 setIsError(true);
                 setMessage("No token returned from server.");
             }
         } catch (error) {
-            console.error("Login/Registration Error:", error.response?.data?.message || error.message);
             setIsError(true);
-            setMessage(
-                error.response?.data?.message || "Something went wrong. Please try again."
-            );
+            setMessage(error.response?.data?.message || "Login failed. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -69,7 +67,7 @@ const LoginPage = ({ onLogin }) => {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    background-size: contain;
+                    background-size: 100px auto;
                     background-position: center;
                     background-attachment: fixed;
                     font-family: 'Open Sans', sans-serif;
@@ -229,10 +227,9 @@ const LoginPage = ({ onLogin }) => {
                 }
                 `}
             </style>
-
             <div className="login-form-box">
                 <h1 className="login-title">
-                    {isRegistering ? "Register" : "Admin Login"}
+                    Admin Login
                 </h1>
                 <form onSubmit={handleSubmit} className="login-form">
                     {message && (
@@ -241,45 +238,33 @@ const LoginPage = ({ onLogin }) => {
                         </p>
                     )}
                     <div className="input-group">
-                        <label htmlFor="username">Username/Email</label>
+                        <label htmlFor="email">Email</label>
                         <input
-                            id="username"
-                            name="username"
-                            type="text"
-                            placeholder="Enter your username or email"
+                            id="email"
+                            type="email"
                             required
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            autoComplete="username"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
                         <input
                             id="password"
-                            name="password"
                             type="password"
-                            placeholder="Enter your password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="current-password"
                         />
                     </div>
-                    <button type="submit" className="login-button" disabled={isSubmitting}>
-                        {isSubmitting ? 'Processing...' : (isRegistering ? "Register" : "Login")}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="login-button"
+                    >
+                        {isSubmitting ? 'Processing...' : "Login"}
                     </button>
                 </form>
-                <div className="links-container">
-                    <button
-                        onClick={() => setIsRegistering(!isRegistering)}
-                        className="signup-link"
-                    >
-                        {isRegistering
-                            ? "Already have an account? Login"
-                            : "Don't have an account? Sign Up"}
-                    </button>
-                </div>
             </div>
         </div>
     );

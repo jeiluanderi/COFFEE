@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'; // Import useEffect
 import { CartContext } from '../../context/CartContext.jsx'; // Correct import path for CartContext
-import Spinner from '../shared/Spinner'; // Assuming Spinner is in shared components
+import Spinner from '../Shared/Spinner.jsx'; // Assuming Spinner is in shared components
 
 // Define a mapping for default icons based on category if not provided by backend
 const categoryIconMap = {

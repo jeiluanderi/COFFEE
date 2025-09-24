@@ -1,56 +1,7 @@
-import React from 'react';
-import servicesImage1 from '../../assets/img/brewing-methods.jpg';
-import servicesImage2 from '../../assets/img/cafe-interior.jpg';
-import servicesImage3 from '../../assets/img/pastries.jpg';
-import servicesImage4 from '../../assets/img/cold-brew.jpg';
-import servicesImage5 from '../../assets/img/online-shop.jpg';
-import servicesImage6 from '../../assets/img/private-events.jpg';
-
-// Data for the services
-const servicesData = [
-    {
-        mainImage: servicesImage1,
-        icon: 'fas fa-coffee',
-        title: 'Artisan Roasting',
-        description: 'We meticulously roast our beans in small batches to bring out their unique flavors and aromas, ensuring a fresh and rich taste.',
-        delay: '0.1s'
-    },
-    {
-        mainImage: servicesImage2,
-        icon: 'fas fa-mug-hot',
-        title: 'Handcrafted Espresso',
-        description: 'Our expert baristas craft perfect espressos, from classic Americanos to lattes with beautiful latte art, tailored to your preference.',
-        delay: '0.3s'
-    },
-    {
-        mainImage: servicesImage3,
-        icon: 'fas fa-cookie-bite',
-        title: 'Freshly Baked Pastries',
-        description: 'Pair your favorite coffee with our selection of daily baked pastries, made with high-quality ingredients for a delightful treat.',
-        delay: '0.5s'
-    },
-    {
-        mainImage: servicesImage4,
-        icon: 'fas fa-glass-whiskey',
-        title: 'Signature Cold Brew',
-        description: 'Our signature cold brew is steeped for 24 hours to create a smooth, low-acidity coffee, perfect for a refreshing pick-me-up.',
-        delay: '0.1s'
-    },
-    {
-        mainImage: servicesImage5,
-        icon: 'fas fa-store',
-        title: 'Online Coffee Shop',
-        description: 'Order your favorite beans and brewing equipment from our online store and enjoy our handcrafted coffee from the comfort of your home.',
-        delay: '0.3s'
-    },
-    {
-        mainImage: servicesImage6,
-        icon: 'fas fa-calendar-alt',
-        title: 'Private Events',
-        description: 'Host your special events at our cozy cafe. We offer a unique and inviting atmosphere with personalized coffee catering.',
-        delay: '0.5s'
-    },
-];
+import React, { useState, useEffect } from 'react';
+// Note: You can remove the static image imports since the data will now come from the backend.
+// import servicesImage1 from '../../assets/img/brewing-methods.jpg';
+// ...etc.
 
 // Reusable Service Card Component
 const ServiceCard = ({ mainImage, icon, title, description, delay }) => (
@@ -75,9 +26,64 @@ const ServiceCard = ({ mainImage, icon, title, description, delay }) => (
 
 // Main Services Section Component
 const ServicesSection = () => {
+    const [services, setServices] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 3; // Display 3 services per page
+
+    // Fetch data from the backend on component mount
+    useEffect(() => {
+        const backendUrl = 'http://localhost:3001/api/services';
+
+        const fetchServices = async () => {
+            try {
+                const response = await fetch(backendUrl);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setServices(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchServices();
+    }, []);
+
+    // Calculate items for the current page
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentServices = services.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(services.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // Conditional rendering for loading and error states
+    if (isLoading) {
+        return (
+            <div className="container py-5 text-center">
+                <p>Loading services...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container py-5 text-center text-danger">
+                <p>Error: {error}</p>
+                <p>Please ensure your backend server is running and the API endpoint is correct.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="container-xxl py-5">
-            {/* The internal CSS block */}
             <style jsx="true">{`
                 .service-item .service-img {
                     overflow: hidden;
@@ -86,28 +92,65 @@ const ServicesSection = () => {
                     transition: transform 0.5s ease;
                 }
                 .service-item:hover .service-img img {
-                    transform: scale(1.1); /* Zooms in on hover */
+                    transform: scale(1.1);
                 }
                 .service-item:hover .service-img::before {
-                    background-color: transparent; /* Removes the overlay on hover */
+                    background-color: transparent;
+                }
+                    
+
+                /* Add new styles for the pagination buttons */
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    margin-top: 2rem;
+                    gap: 0.5rem;
+                }
+                .pagination button {
+                    padding: 0.5rem 1rem;
+                    border-radius: 9999px;
+                    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+                    border: 1px solid var(--bs-primary);
+                    background-color: white;
+                    color: var(--bs-primary);
+                    cursor: pointer;
+                }
+                .pagination button.active {
+                    background-color: var(--bs-primary);
+                    color: white;
+                    border-color: var(--bs-primary);
+                }
+                :root {
+                    --bs-primary: #8B4513; /* Assuming this is your primary color */
                 }
             `}</style>
-
             <div className="container">
                 <div className="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: '500px' }}>
                     <p className="fs-5 fw-bold text-primary">Our Offerings</p>
                     <h1 className="display-5 mb-5">Discover What We Brew For You</h1>
                 </div>
                 <div className="row g-4">
-                    {servicesData.map((service, index) => (
+                    {currentServices.map((service, index) => (
                         <ServiceCard
-                            key={index}
-                            mainImage={service.mainImage}
+                            key={service.id || index}
+                            mainImage={service.image_src} // Change from service.image_url to service.image_src
                             icon={service.icon}
                             title={service.title}
                             description={service.description}
                             delay={service.delay}
                         />
+                    ))}
+                </div>
+                {/* Pagination UI */}
+                <div className="pagination">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button
+                            key={index + 1}
+                            className={currentPage === index + 1 ? 'active' : ''}
+                            onClick={() => handlePageChange(index + 1)}
+                        >
+                            {index + 1}
+                        </button>
                     ))}
                 </div>
             </div>

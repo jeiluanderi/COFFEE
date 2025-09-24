@@ -1,7 +1,7 @@
 // src/pages/Error404Page.jsx
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/shared/PageHeader'; // Adjust path if necessary
-import Spinner from '../components/shared/Spinner';     // Adjust path if necessary
+// import PageHeader from '../components/Shared/PageHeader'; // Adjust path if necessary
+import Spinner from '../components/Shared/Spinner';     // Adjust path if necessary
 import { Link } from 'react-router-dom';
 
 const Error404Page = () => {
@@ -30,7 +30,7 @@ const Error404Page = () => {
     return (
         <>
             {/* PageHeader for the 404 page */}
-            <PageHeader title="Page Not Found" activePage="404 Error" />
+            {/* <PageHeader title="Page Not Found" activePage="404 Error" /> */}
 
             <div className="container-xxl py-5" style={{ backgroundColor: colors.light }}>
                 <style jsx>{`

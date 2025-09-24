@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/Team/PageHeader';
+// import PageHeader from '../components/Shared/PageHeader';
 import TeamSection from '../components/Team/TeamSection';
-import Spinner from '../components/shared/Spinner';
+import Spinner from '../components/Shared/Spinner';
 
 
 function TeamPage() {
@@ -21,7 +21,7 @@ function TeamPage() {
                 <Spinner />
             ) : (
                 <>
-                    <PageHeader title="Our Team" activePage="Our Team" />
+                    {/* <PageHeader title="Our Team" activePage="Our Team" /> */}
                     <TeamSection />
                     {/* <TeamMember /> */}
                 </>

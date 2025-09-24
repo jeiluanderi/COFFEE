@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const { Pool } = require('pg');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth'); // Import auth middleware
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware'); // Updated import
 
 const pool = new Pool({
     user: process.env.DB_USER,

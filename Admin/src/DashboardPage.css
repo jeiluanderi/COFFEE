@@ -1,0 +1,605 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+:root {
+    --primary-color: #6F4E37;
+    /* Coffee brown */
+    --secondary-color: #A88F7B;
+    /* Lighter brown */
+    --background-color: #F8F5EB;
+    /* Creamy background */
+    --card-background: #FFFFFF;
+    --text-dark: #36220B;
+    --text-light: #6F4E37;
+    --accent-yellow: #FFC107;
+    --accent-green: #28a745;
+    --accent-red: #dc3545;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-page {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    min-height: 100vh;
+    padding: 1.5rem;
+    /* Decreased from 2.5rem */
+    color: var(--text-dark);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    /* Decreased from 2rem */
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    /* Decreased from 20px */
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.75rem;
+    /* Decreased from 1rem */
+}
+
+.header-title {
+    font-size: 2rem;
+    /* Decreased from 2.5rem */
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: -1px;
+}
+
+.header-date {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    /* Decreased from 1.1rem */
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+/* Base Card Styling */
+.card {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 5px 15px var(--shadow-light);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+.loading-card,
+.error-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    flex-direction: column;
+    gap: 1rem;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-light);
+}
+
+/* Spinners for loading states */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Summary Grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-card {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.summary-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.summary-card-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+}
+
+.summary-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.summary-subtitle {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.subtitle-with-icon {
+    display: flex;
+    align-items: center;
+}
+
+.subtitle-with-icon svg {
+    margin-right: 4px;
+}
+
+.icon-circle {
+    border-radius: 50%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px var(--shadow-light);
+}
+
+.icon-circle.yellow {
+    background-color: var(--accent-yellow);
+}
+
+.icon-circle.brown {
+    background-color: var(--primary-color);
+}
+
+.icon-circle.brown-darker {
+    background-color: #4a3429;
+}
+
+.create-order-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-color);
+    border: 2px dashed var(--primary-color);
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.create-order-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    transform: translateY(-5px);
+}
+
+/* Main Content Grid */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-payment-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+/* List Components */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.list-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.search-input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-light);
+}
+
+.search-input {
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    padding: 10px 15px 10px 40px;
+    font-size: 0.9rem;
+    outline: none;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(111, 78, 55, 0.3);
+}
+
+.item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-item,
+.dish-item,
+.out-of-stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease;
+}
+
+.list-item:hover {
+    background-color: #fcfaf6;
+}
+
+.list-item:last-child,
+.dish-item:last-child,
+.out-of-stock-item:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    display: flex;
+    align-items: center;
+}
+
+.item-id-badge {
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 1rem;
+    border: 2px solid var(--primary-color);
+}
+
+.item-details h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.item-details span {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.status-badge.in-progress {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.ready {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-all-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    font-family: 'Open Sans', sans-serif;
+    transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+    color: var(--text-dark);
+}
+
+.low-stock-card {
+    margin-top: 1.5rem;
+}
+
+.out-of-stock-item.out-of-stock {
+    color: var(--accent-red);
+}
+
+.out-of-stock-item.low-stock {
+    color: var(--accent-yellow);
+}
+
+.analytics-chart-card {
+    margin-top: 1.5rem;
+}
+
+.analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.timeframe-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.timeframe-selector .status-badge {
+    background-color: #F0EAD6;
+    color: var(--text-light);
+}
+
+.timeframe-selector .status-badge:hover {
+    background-color: #e6dcc7;
+}
+
+.timeframe-selector .status-badge.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.chart-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 150px;
+    color: var(--text-light);
+    font-family: 'Open Sans', sans-serif;
+}
+
+.no-results {
+    font-family: 'Open Sans', sans-serif;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 1rem;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-page {
+        padding: 2rem;
+    }
+
+    .order-payment-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-page {
+        padding: 1.5rem;
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-title {
+        font-size: 2rem;
+    }
+
+    .header-date {
+        font-size: 1rem;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Add these new styles to your DashboardPage.css */
+
+/* Style for the small "Add Order" button on the dashboard */
+.add-btn {
+    background-color: #6F4E37; /* Coffee brown */
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-btn:hover {
+    background-color: #4F3827; /* Darker brown on hover */
+    transform: translateY(-1px);
+}
+
+/* Style for the overall list header to align items */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Allows for wrapping on smaller screens */
+    gap: 1rem;
+}
+
+/* Style for the search input group to align correctly */
+.search-input-group {
+    position: relative;
+    flex-grow: 1; /* Allows it to take up available space */
+    max-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding-left: 2.5rem; /* Space for the icon */
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+}
+
+/* Updated style for the button that was in the SummaryCards section */
+.create-order-small-btn {
+    background-color: #6F4E37;
+    color: white;
+    border: none;
+    width: 70px; /* Small fixed size */
+    height: 70px; /* Small fixed size */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    align-self: flex-start; /* Aligns to the top of the grid cell */
+}
+
+.create-order-small-btn:hover {
+    background-color: #4F3827;
+    transform: translateY(-2px);
+}
+
+/* Style for the total price in the modal */
+.total-price-display {
+    text-align: right;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    color: #6F4E37;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E7EB;
+}
+/* Add these new styles to your DashboardPage.css */
+
+/* Style for the container holding the search and add button */
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-left: auto; /* Pushes this container to the right */
+}
+
+/* Style for the list header to align items */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Allows for wrapping on smaller screens */
+    gap: 1rem;
+}
+
+/* Style for the search input group to align correctly */
+.search-input-group {
+    position: relative;
+    width: 200px; /* Or a fixed width for consistent sizing */
+}
+
+/* Style for the Add Order button with text */
+.add-btn {
+    background-color: #6F4E37; /* Coffee brown */
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-btn:hover {
+    background-color: #4F3827; /* Darker brown on hover */
+    transform: translateY(-1px);
+}
+
+/* Updated style for the button that was in the SummaryCards section */
+.create-order-small-btn {
+    display: none; /* Hide the old button from here as it's been moved */
+}
+
+/* Style for the total price in the modal */
+.total-price-display {
+    text-align: right;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    color: #6F4E37;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E7EB;
+}

@@ -1,7 +1,7 @@
 // src/pages/MenuPage.jsx
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/shared/PageHeader'; // Assuming PageHeader is in shared
-import Spinner from '../components/shared/Spinner';     // Assuming Spinner is in shared
+// import PageHeader from '../components/Shared/PageHeader'; // Assuming PageHeader is in shared
+import Spinner from '../components/Shared/Spinner';     // Assuming Spinner is in shared
 import MenuSection from '../components/Menu/MenuSection'; // Assuming MenuSection component exists
 
 const MenuPage = () => {
@@ -71,7 +71,7 @@ const MenuPage = () => {
     return (
         <>
             {/* PageHeader component for the menu page */}
-            <PageHeader title="Our Menu" activePage="Menu" />
+            {/* <PageHeader title="Our Menu" activePage="Menu" /> */}
             {/* MenuSection component receives fetched coffees and categories as props */}
             <MenuSection coffees={coffees} categories={categories} />
         </>

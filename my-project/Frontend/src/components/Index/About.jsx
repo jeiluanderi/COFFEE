@@ -1,5 +1,5 @@
-import React from 'react';
-import img from "../../assets/img/worldcoffee.jpg"
+import React, { useState, useEffect } from 'react';
+
 // Reusable components (no changes needed here)
 const ExperienceBlock = ({ years, text }) => (
     <>
@@ -26,39 +26,72 @@ const FeatureListItem = ({ iconClass, title, description }) => (
     </div>
 );
 
-// Data for the feature list (updated for a coffee theme)
-const features = [
-    {
-        iconClass: 'fa-award',
-        title: 'Award-Winning Coffee',
-        description: 'Our beans are recognized for their rich flavor and quality.'
-    },
-    {
-        iconClass: 'fa-users',
-        title: 'Passionate Baristas',
-        description: 'Our team is dedicated to crafting the perfect cup for you.'
-    }
-];
-
 // Main Component (with updated content and image path)
 const AboutSection = () => {
+    const [aboutData, setAboutData] = useState(null);
+    const [features, setFeatures] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch the main about page content
+                const aboutResponse = await fetch('http://localhost:3001/api/about');
+                if (!aboutResponse.ok) {
+                    throw new Error('Failed to fetch about data');
+                }
+                const aboutResult = await aboutResponse.json();
+                setAboutData(aboutResult.about);
+                setFeatures(aboutResult.features);
+
+            } catch (err) {
+                console.error("Error fetching about data:", err);
+                setError("Failed to load about section. Please check the server connection.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="container-xxl py-5">
+                <div className="container text-center">
+                    <p className="text-xl text-dark">Loading about section...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container-xxl py-5">
+                <div className="container text-center">
+                    <p className="text-xl text-red-600">{error}</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container-xxl py-5">
             <div className="container">
                 <div className="row g-5 align-items-end">
                     {/* Image Column */}
                     <div className="col-lg-3 col-md-5 wow fadeInUp" data-wow-delay="0.1s">
-                        {/* The image path needs to be updated to a coffee-themed image */}
-                        <img className="img-fluid rounded" data-wow-delay="0.1s" src={img} alt="About our coffee shop" />
+                        <img className="img-fluid rounded" data-wow-delay="0.1s" src={aboutData.image_url} alt="About our coffee shop" />
                     </div>
 
                     {/* Content Column */}
                     <div className="col-lg-6 col-md-7 wow fadeInUp" data-wow-delay="0.3s">
-                        <ExperienceBlock years="10" text="Years of Roasting" />
+                        <ExperienceBlock years={aboutData.years_of_experience} text="Years of Roasting" />
                         <AboutContent
-                            title="Serving the Community with the Perfect Brew"
-                            description="For a decade, we've been dedicated to the art of coffee roasting and brewing. Our mission is to provide an exceptional coffee experience, sourcing the finest beans and sharing our passion with every cup. We believe in quality, community, and the perfect morning ritual."
-                            buttonText="Our Story"
+                            title={aboutData.about_title}
+                            description={aboutData.about_description}
+                            buttonText={aboutData.button_text}
                         />
                     </div>
 
@@ -68,9 +101,9 @@ const AboutSection = () => {
                             {features.map((feature, index) => (
                                 <FeatureListItem
                                     key={index}
-                                    iconClass={feature.iconClass}
-                                    title={feature.title}
-                                    description={feature.description}
+                                    iconClass={feature.icon_class}
+                                    title={feature.feature_title}
+                                    description={feature.feature_description}
                                 />
                             ))}
                         </div>

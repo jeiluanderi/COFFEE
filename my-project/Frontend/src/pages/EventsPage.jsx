@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'; // <-- This is the missing part
-import PageHeader from '../components/events/PageHeader';
+// import PageHeader from '../components/Shared/PageHeader';
 import EventsSection from '../components/events/EventsSection';
 import WhyUsSection from '../components/events/WhyUsSection';
 import FactCounter from '../components/FactCounter/FactCounter';
-import Spinner from '../components/shared/Spinner';
+import Spinner from '../components/Shared/Spinner';
 
 function Events() {
     // 1. Create a state variable to track the loading status
@@ -29,7 +29,7 @@ function Events() {
             ) : (
                 // 3. Render the rest of the page content when 'loading' is false
                 <>
-                    <PageHeader />
+                    {/* <PageHeader /> */}
                     <EventsSection />
                     {/* <WhyUsSection /> */}
                     {/* <FactCounter /> */}

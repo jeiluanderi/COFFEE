@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/Blog/PageHeader';
-import Spinner from '../components/shared/Spinner'; // Import the new Spinner component
+// import PageHeader from '../components/Shared/PageHeader';
+import Spinner from '../components/Shared/Spinner'; // Import the new Spinner component
 import BlogSection from '../components/Blog/BlogSection';
 
 const Blog = () => {
@@ -25,7 +25,7 @@ const Blog = () => {
             ) : (
                 // Render the page content when loading is false
                 <>
-                    <PageHeader />
+                    {/* <PageHeader /> */}
                     <BlogSection />
                 </>
             )}

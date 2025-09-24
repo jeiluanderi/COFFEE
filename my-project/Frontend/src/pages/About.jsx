@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/About/PageHeader';
+// import PageHeader from '../components/Shared/PageHeader';
 import AboutSection from '../components/About/AboutSection';
 import FactCounter from '../components/FactCounter/FactCounter';
 import TeamSection from '../components/About/TeamSection';
-import Spinner from '../components/shared/Spinner';
+import Spinner from '../components/Shared/Spinner';
 
 function AboutPage() {
     // 1. Create a state variable to track the loading status
@@ -29,7 +29,7 @@ function AboutPage() {
             ) : (
                 // 3. Render the rest of the page content when 'loading' is false
                 <>
-                    <PageHeader />
+                    {/* <PageHeader /> */}
                     <AboutSection />
                     <FactCounter />
                     <TeamSection />

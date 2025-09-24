@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/Testimonial/PageHeader'; // Assuming PageHeader is in this path
-import Spinner from '../components/shared/Spinner';
+// import PageHeader from '../components/Shared/PageHeader'; // Assuming PageHeader is in this path
+import Spinner from '../components/Shared/Spinner';
 import TestimonialSection from '../components/Testimonial/TestimonialSection';
 
 const TestimonialPage = () => {
@@ -26,7 +26,7 @@ const TestimonialPage = () => {
                 // Render the page content when loading is false
                 <>
                     {/* PageHeader for the Testimonials page with relevant props */}
-                    <PageHeader title="Testimonials" activePage="Testimonials" />
+                    {/* <PageHeader title="Testimonials" activePage="Testimonials" /> */}
                     <TestimonialSection />
                 </>
             )}

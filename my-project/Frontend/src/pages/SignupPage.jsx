@@ -1,8 +1,8 @@
 // src/pages/SignupPage.jsx
 import React, { useState, useEffect } from 'react';
-import Spinner from '../components/shared/Spinner';
+import Spinner from '../components/Shared/Spinner';
 import { Link, useNavigate } from 'react-router-dom';
-import PageHeader from '../components/shared/PageHeader';
+// import PageHeader from '../components/Shared/PageHeader';
 
 const SignupPage = () => {
     const navigate = useNavigate();
@@ -87,7 +87,7 @@ const SignupPage = () => {
 
     return (
         <>
-            <PageHeader title="Sign Up" activePage="Sign Up" />
+            {/* <PageHeader title="Sign Up" activePage="Sign Up" /> */}
             <div className="container-xxl py-5" style={{ backgroundColor: colors.light }}>
                 <style jsx="true">{`
                     .error-message { color: #dc3545; }

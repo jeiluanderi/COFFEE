@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import RootLayout from './layout/RootLayout';
 import Home from './pages/Home';
 import AboutPage from './pages/About';
+import ServicesPage from './pages/ServicesPage';
 import MenuPage from './pages/MenuPage'; // Ensure file is named MenuPage.jsx
 import LocationsPage from './pages/LocationsPage'; // Ensure file is named LocationsPage.jsx
 import EventsPage from './pages/EventsPage'; // Ensure file is named EventsPage.jsx
@@ -32,6 +33,7 @@ function App() {
           <Route path='/' element={<RootLayout />} >
             <Route index element={<Home />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/services"element={<ServicesPage/>}   />
             <Route path="/menu" element={<MenuPage />} /> {/* Route path now lowercase */}
             <Route path="/locations" element={<LocationsPage />} /> {/* Route path now lowercase */}
             <Route path="/events" element={<EventsPage />} />

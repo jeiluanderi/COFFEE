@@ -1,117 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Search, Trash2 } from 'lucide-react';
-import '../index.css';
+import React from 'react';
 
-const OrderList = ({ updateTrigger, onOrderDeleted, onOrderUpdated }) => {
-    // State to hold the fetched orders
-    const [orders, setOrders] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Function to fetch data from the backend API
-        const fetchOrders = async () => {
-            try {
-                setIsLoading(true);
-                const response = await axios.get('http://localhost:3001/api/orders');
-                setOrders(response.data);
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchOrders();
-    }, [updateTrigger]); // The useEffect now depends on the updateTrigger prop
-
-    // Function to handle status change and send a PUT request to the backend
-    const handleStatusChange = async (orderId, newStatus) => {
-        try {
-            await axios.put(`http://localhost:3001/api/orders/${orderId}`, {
-                status: newStatus
-            });
-            // Call the parent function to trigger a full re-fetch
-            if (onOrderUpdated) {
-                onOrderUpdated();
-            }
-        } catch (error) {
-            console.error("Error updating order status:", error);
-        }
-    };
-
-    // Function to handle order deletion and send a DELETE request to the backend
-    const handleDeleteOrder = async (orderId) => {
-        try {
-            await axios.delete(`http://localhost:3001/api/orders/${orderId}`);
-            // Call the parent function to trigger a full re-fetch
-            if (onOrderDeleted) {
-                onOrderDeleted();
-            }
-        } catch (error) {
-            console.error("Error deleting order:", error);
-        }
-    };
-
-    const filteredOrders = orders.filter(order =>
-        order.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    if (isLoading) {
-        return <div className="card loading-state">Loading orders...</div>;
-    }
-
+// Component to render a single order list
+const OrderList = ({ orders }) => {
     return (
-        <div className="card order-list">
-            <div className="list-header">
-                <h3>Orders</h3>
-                <div className="search-box">
-                    <Search className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Search a customer"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
-            <ul className="item-list">
-                {filteredOrders.length > 0 ? (
-                    filteredOrders.map(order => (
-                        <li key={order.id} className="list-item">
-                            <div className="item-info">
-                                <div className="item-id-badge">{order.id}</div>
-                                <div className="item-details">
-                                    <h4>{order.customer_name}</h4>
-                                    <span>{order.items} items</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <select
-                                    value={order.status}
-                                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                    className={`status-badge ${order.status
-                                        .toLowerCase()
-                                        .replace(' ', '-')}`}
-                                >
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Ready">Ready</option>
-                                    <option value="Completed">Completed</option>
-                                </select>
-                                <button
-                                    onClick={() => handleDeleteOrder(order.id)}
-                                    className="delete-btn"
-                                >
-                                    <Trash2 size={20} />
-                                </button>
-                            </div>
-                        </li>
-                    ))
-                ) : (
-                    <li className="list-item no-results">No orders found.</li>
-                )}
-            </ul>
+        <div className="space-y-6">
+            {orders.length === 0 ? (
+                <p className="text-center text-gray-500">No orders have been submitted yet.</p>
+            ) : (
+                orders.map((order) => (
+                    <div key={order.id} className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-semibold text-gray-800">Order #{order.id}</h3>
+                            <span
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : order.status === 'completed'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}
+                            >
+                                {order.status}
+                            </span>
+                        </div>
+
+                        <div className="text-gray-600 space-y-2">
+                            <p>
+                                <strong>Customer:</strong> {order.customer_name} ({order.customer_email})
+                            </p>
+                            <p>
+                                <strong>Total Price:</strong> ${order.total_price.toFixed(2)}
+                            </p>
+                            <p>
+                                <strong>Shipping Address:</strong> {order.shipping_address}
+                            </p>
+                            <p>
+                                <strong>Phone:</strong> {order.phone_number}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Ordered on: {new Date(order.created_at).toLocaleString()}
+                            </p>
+                        </div>
+
+                        <div className="mt-4 border-t pt-4">
+                            <h4 className="font-semibold text-gray-700 mb-2">Items:</h4>
+                            <ul className="list-disc list-inside space-y-1 text-gray-600">
+                                {(Array.isArray(order.items) ? order.items : []).map((item) => (
+                                    <li key={item.id}>
+                                        {item.quantity} x {item.coffee_name} - ${item.price_at_time_of_order.toFixed(2)} each
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                ))
+            )}
         </div>
     );
 };

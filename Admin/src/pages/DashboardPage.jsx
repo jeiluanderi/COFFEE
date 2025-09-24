@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { Plus, ArrowUp, CheckCircle, Search } from 'lucide-react';
 import axios from 'axios';
-// NewOrderModal will be required if the 'CREATE NEW ORDER' button is to be functional.
-// import NewOrderModal from '../components/NewOrderModal'; 
-
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
+import '../../src/DashboardPage.css';
+// import CreateOrderModal from '../components/CreateOrderModal'; // Remove this import
 
 // Component to display dynamic header message and current date
 const Header = () => {
@@ -44,165 +36,117 @@ const Header = () => {
     }, []);
 
     return (
-        <header className="main-header" style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#36220B' }}>{typedMessage}</h2>
-            <span className="date" style={{ fontSize: '1rem', color: '#6F4E37' }}>{currentDate}</span>
+        <header className="main-header">
+            <h2 className="header-title">{typedMessage}</h2>
+            <span className="header-date">{currentDate}</span>
         </header>
     );
 };
 
-
 // Summary Cards Component - adapted for Admin View
-const SummaryCards = ({ onNewOrderClick }) => {
-    const [summaryData, setSummaryData] = useState({
-        newOrders: 0,
-        totalOrders: 0,
-        waitingList: 0, // This might represent pending inquiries or orders
-        totalOrdersChange: 0,
-        waitingListChange: 0,
-    });
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+// The `onNewOrderClick` prop is no longer needed
+const SummaryCards = () => {
+    const [summaryData, setSummaryData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const backendUrl = 'http://localhost:3001';
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
 
     useEffect(() => {
         const fetchSummaryData = async () => {
+            setIsLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setSummaryData(null);
+                setIsLoading(false);
+                return;
+            }
             try {
-                // Ensure the /api/summary endpoint exists and returns this data,
-                // or create it on the backend. This endpoint would also be protected.
-                const response = await axios.get(`${backendUrl}/api/summary`, { headers: getAuthHeaders() });
+                const response = await axios.get(`${backendUrl}/api/analytics/summary`, { headers: getAuthHeaders() });
                 setSummaryData(response.data);
             } catch (error) {
-                console.error("Error fetching summary data:", error);
-                // Fallback to dummy data on error
-                setSummaryData({
-                    newOrders: 16,
-                    totalOrders: 86,
-                    waitingList: 5,
-                    totalOrdersChange: 2.5,
-                    waitingListChange: 1.2,
-                });
-            }
-        };
-        fetchSummaryData();
-    }, [backendUrl]);
-
-    return (
-        <div className="summary-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px',
-            marginBottom: '24px'
-        }}>
-            <div className="card summary-card" style={{ textAlign: 'left' }}>
-                <div className="summary-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span className="summary-card-title" style={{ fontSize: '1.1rem', fontWeight: '500', color: '#6F4E37' }}>New Orders</span>
-                    <div className="icon-circle yellow" style={{ backgroundColor: '#F7B731', borderRadius: '50%', padding: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><CheckCircle size={20} color="white" /></div>
-                </div>
-                <div className="value" style={{ fontSize: '2.5rem', fontWeight: '700', color: '#36220B' }}>{summaryData.newOrders}</div>
-                <span className="subtitle" style={{ fontSize: '0.9rem', color: '#8B4513' }}>Updated every new order</span>
-            </div>
-            <div className="card summary-card" style={{ textAlign: 'left' }}>
-                <div className="summary-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span className="summary-card-title" style={{ fontSize: '1.1rem', fontWeight: '500', color: '#6F4E37' }}>Total Orders</span>
-                    <div className="icon-circle yellow" style={{ backgroundColor: '#8B4513', borderRadius: '50%', padding: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ArrowUp size={20} color="white" /></div>
-                </div>
-                <div className="value" style={{ fontSize: '2.5rem', fontWeight: '700', color: '#36220B' }}>{summaryData.totalOrders}</div>
-                <span className="subtitle" style={{ fontSize: '0.9rem', color: '#6F4E37', display: 'flex', alignItems: 'center' }}>
-                    <ArrowUp size={16} color="#4a5568" style={{ marginRight: '4px' }} />+{summaryData.totalOrdersChange}% than usual
-                </span>
-            </div>
-            <div className="card summary-card" style={{ textAlign: 'left' }}>
-                <div className="summary-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span className="summary-card-title" style={{ fontSize: '1.1rem', fontWeight: '500', color: '#6F4E37' }}>Waiting List</span>
-                    <div className="icon-circle yellow" style={{ backgroundColor: '#6F4E37', borderRadius: '50%', padding: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ArrowUp size={20} color="white" /></div>
-                </div>
-                <div className="value" style={{ fontSize: '2.5rem', fontWeight: '700', color: '#36220B' }}>{summaryData.waitingList}</div>
-                <span className="subtitle" style={{ fontSize: '0.9rem', color: '#6F4E37', display: 'flex', alignItems: 'center' }}>
-                    <ArrowUp size={16} color="#4a5568" style={{ marginRight: '4px' }} />+{summaryData.waitingListChange}% than usual
-                </span>
-            </div>
-            {/* Create New Order Button for Admin */}
-            <button
-                className="create-order-btn card"
-                onClick={onNewOrderClick}
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: '#F8F5EB',
-                    border: '2px dashed #8B4513',
-                    color: '#8B4513',
-                    fontSize: '1.2rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: 'none',
-                }}
-            >
-                <Plus size={30} className="mb-2" />
-                CREATE NEW ORDER
-            </button>
-        </div>
-    );
-};
-
-
-// OrderList Component - Admin View
-const OrderList = () => {
-    const [orders, setOrders] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                setIsLoading(true);
-                // Admin can fetch all orders
-                const response = await axios.get(`${backendUrl}/api/orders`, { headers: getAuthHeaders() });
-                setOrders(response.data);
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-                setOrders([
-                    { id: 'ORD001', customerName: 'John Doe', items: 3, status: 'In Progress', orderDate: '2025-08-20' },
-                    { id: 'ORD002', customerName: 'Jane Smith', items: 1, status: 'Ready', orderDate: '2025-08-21' },
-                    { id: 'ORD003', customerName: 'Coffee Lover', items: 5, status: 'Completed', orderDate: '2025-08-22' },
-                ]);
+                console.error("Error fetching summary data:", error.response?.data || error.message);
+                setSummaryData(null);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchOrders();
-    }, [backendUrl]);
+        fetchSummaryData();
+    }, []);
 
+    if (isLoading) {
+        return <div className="summary-grid"><div className="card loading-card">Loading summary...</div></div>;
+    }
+
+    if (!summaryData) {
+        return <div className="summary-grid"><div className="card error-card">Failed to load summary data.</div></div>;
+    }
+
+    const { total_sales, total_orders, total_users, total_coffees } = summaryData;
+
+    return (
+        <div className="summary-grid">
+            <div className="card summary-card">
+                <div className="summary-card-header">
+                    <span className="summary-card-title">Total Sales</span>
+                    <div className="icon-circle yellow"><CheckCircle size={20} color="white" /></div>
+                </div>
+                <div className="summary-value">${total_sales ? total_sales.toFixed(2) : '0.00'}</div>
+                <span className="summary-subtitle">Total revenue from completed orders</span>
+            </div>
+            <div className="card summary-card">
+                <div className="summary-card-header">
+                    <span className="summary-card-title">Total Orders</span>
+                    <div className="icon-circle brown"><ArrowUp size={20} color="white" /></div>
+                </div>
+                <div className="summary-value">{total_orders || 0}</div>
+                <span className="summary-subtitle subtitle-with-icon">
+                    <ArrowUp size={16} color="#4a5568" />
+                    {total_orders || 0} all-time orders
+                </span>
+            </div>
+            <div className="card summary-card">
+                <div className="summary-card-header">
+                    <span className="summary-card-title">Total Users</span>
+                    <div className="icon-circle brown-darker"><ArrowUp size={20} color="white" /></div>
+                </div>
+                <div className="summary-value">{total_users || 0}</div>
+                <span className="summary-subtitle subtitle-with-icon">
+                    <ArrowUp size={16} color="#4a5568" />
+                    {total_users || 0} registered users
+                </span>
+            </div>
+            {/* The button for creating a new order is now removed */}
+        </div>
+    );
+};
+
+// OrderList Component - The `onNewOrderClick` prop is no longer needed
+const OrderList = ({ orders, isLoading, searchTerm, setSearchTerm }) => {
     const filteredOrders = orders.filter(order =>
-        order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.id?.toLowerCase().includes(searchTerm.toLowerCase())
+        (order.id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.customerName || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (isLoading) return <div className="card">Loading orders...</div>;
+    if (isLoading) return <div className="card order-list-card"><div className="list-header"><h3>Latest Orders</h3></div><div className="loading-state"><div className="spinner"></div><p>Loading orders...</p></div></div>;
 
     return (
         <div className="card order-list-card">
             <div className="list-header">
                 <h3>Latest Orders</h3>
-                <div className="search-input-group" style={{ display: 'flex', alignItems: 'center' }}>
-                    <Search size={20} style={{ marginRight: '8px', color: '#6F4E37' }} />
+                <div className="search-input-group">
+                    <Search size={20} className="search-icon" />
                     <input
                         type="text"
                         placeholder="Search orders..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.9rem',
-                            outline: 'none',
-                            width: '180px'
-                        }}
+                        className="search-input"
                     />
                 </div>
+                {/* The "Add Order" button is removed */}
             </div>
             <ul className="item-list">
                 {filteredOrders.length > 0 ? (
@@ -212,7 +156,7 @@ const OrderList = () => {
                                 <div className="item-id-badge">{order.id}</div>
                                 <div className="item-details">
                                     <h4>{order.customerName}</h4>
-                                    <span>{order.items} items</span>
+                                    <span>{order.items?.length || 0} items</span>
                                 </div>
                             </div>
                             <span className={`status-badge ${order.status?.toLowerCase().replace(' ', '-')}`}>
@@ -221,93 +165,109 @@ const OrderList = () => {
                         </li>
                     ))
                 ) : (
-                    <li className="list-item no-results" style={{ color: '#6F4E37' }}>No orders found.</li>
+                    <li className="list-item no-results">No orders found.</li>
                 )}
             </ul>
         </div>
     );
 };
 
-
 // SideCards Component - Admin View
 const SideCards = () => {
-    const [popularDishes, setPopularDishes] = useState([]);
+    const [popularCoffees, setPopularCoffees] = useState([]);
     const [outOfStock, setOutOfStock] = useState([]);
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const [isLoading, setIsLoading] = useState(true);
+    const backendUrl = 'http://localhost:3001';
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
 
     useEffect(() => {
         const fetchData = async () => {
+            setIsLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setPopularCoffees([]);
+                setOutOfStock([]);
+                setIsLoading(false);
+                return;
+            }
             try {
-                // Fetch popular dishes - using public endpoint for now, but admin will eventually have better management
-                const popularResponse = await axios.get(`${backendUrl}/api/coffees`, { headers: getAuthHeaders() }); // Auth header might not be needed if endpoint is public
-                const allCoffees = popularResponse.data;
+                const popularResponse = await axios.get(`${backendUrl}/api/analytics/bar-data`, { headers: getAuthHeaders() });
+                const popularData = popularResponse.data.map(item => ({
+                    id: item.coffee_id,
+                    name: item.product_name,
+                    orders: parseInt(item.total_quantity_sold, 10),
+                    image: `https://placehold.co/40x40/F8F5EB/6F4E37?text=${item.product_name.charAt(0).toUpperCase()}`
+                }));
+                setPopularCoffees(popularData);
 
-                // Simple logic to determine "popular" (e.g., top 3 by price)
-                const sortedCoffees = [...allCoffees].sort((a, b) => b.price - a.price);
-                setPopularDishes(sortedCoffees.slice(0, 3).map((c, index) => ({
-                    id: c.id,
-                    name: c.name,
-                    orders: Math.floor(Math.random() * 50) + 10, // Simulate order count
-                    image: c.image_url || `https://placehold.co/40x40/F8F5EB/6F4E37?text=${index + 1}`
-                })));
-
-                // Filter out-of-stock items (stock_quantity <= 5)
+                const allCoffeesResponse = await axios.get(`${backendUrl}/api/coffees`, { headers: getAuthHeaders() });
+                const allCoffees = allCoffeesResponse.data;
                 const outOfStockItems = allCoffees.filter(coffee => coffee.stock_quantity <= 5);
                 setOutOfStock(outOfStockItems.map(item => ({
                     id: item.id,
                     name: item.name,
                     available: item.stock_quantity
                 })));
-
             } catch (error) {
-                console.error("Error fetching side card data:", error);
-                setPopularDishes([
-                    { name: 'Espresso', orders: 120, image: 'https://placehold.co/40x40/F8F5EB/6F4E37?text=E' },
-                    { name: 'Latte', orders: 90, image: 'https://placehold.co/40x40/F8F5EB/6F4E37?text=L' },
-                    { name: 'Cappuccino', orders: 85, image: 'https://placehold.co/40x40/F8F5EB/6F4E37?text=C' },
-                ]);
-                setOutOfStock([
-                    { name: 'Guatemala Coffee', available: 2 },
-                    { name: 'Ethiopian Beans', available: 0 },
-                ]);
+                console.error("Error fetching side card data:", error.response?.data || error.message);
+                setPopularCoffees([]);
+                setOutOfStock([]);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [backendUrl]);
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="side-cards">
+                <div className="card loading-card"><div className="spinner"></div><p>Loading...</p></div>
+                <div className="card low-stock-card loading-card"><div className="spinner"></div><p>Loading...</p></div>
+            </div>
+        );
+    }
 
     return (
-        <div>
+        <div className="side-cards">
             <div className="card">
                 <div className="list-header">
                     <h3>Popular Coffees</h3>
-                    <a href="#" style={{ color: '#8B4513' }}>View All</a>
+                    <a href="#" className="view-all-link">View All</a>
                 </div>
                 <ul className="item-list">
-                    {popularDishes.map((dish, index) => (
-                        <li key={dish.id || index} className="dish-item">
-                            <div className="item-info">
-                                <span className="item-id-badge" style={{ backgroundColor: '#E8D2BB', color: '#36220B' }}>{index + 1}</span>
-                                <img src={dish.image} alt={dish.name} className="user-avatar" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', marginRight: '12px' }} />
-                                <div className="item-details">
-                                    <h4>{dish.name}</h4>
-                                    <span>Orders: {dish.orders}</span>
+                    {popularCoffees.length > 0 ? (
+                        popularCoffees.map((dish, index) => (
+                            <li key={dish.id || index} className="dish-item">
+                                <div className="item-info">
+                                    <span className="item-id-badge">{index + 1}</span>
+                                    <img src={dish.image} alt={dish.name} className="user-avatar" />
+                                    <div className="item-details">
+                                        <h4>{dish.name}</h4>
+                                        <span>Orders: {dish.orders}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                    ))}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="list-item no-results">No popular coffees found.</li>
+                    )}
                 </ul>
             </div>
 
-            <div className="card" style={{ marginTop: '24px' }}>
+            <div className="card low-stock-card">
                 <div className="list-header">
                     <h3>Low Stock / Out of Stock</h3>
-                    <a href="#" style={{ color: '#8B4513' }}>View All</a>
+                    <a href="#" className="view-all-link">View All</a>
                 </div>
                 <ul className="item-list">
                     {outOfStock.length > 0 ? (
                         outOfStock.map((item, index) => (
-                            <li key={item.id || index} className="out-of-stock-item" style={{ color: item.available === 0 ? '#dc3545' : '#ffc107' }}>
+                            <li key={item.id || index} className={`out-of-stock-item ${item.available === 0 ? 'out-of-stock' : 'low-stock'}`}>
                                 <div className="item-details">
                                     <h4>{item.name}</h4>
                                     <span>Available: {item.available}</span>
@@ -315,7 +275,7 @@ const SideCards = () => {
                             </li>
                         ))
                     ) : (
-                        <li className="list-item no-results" style={{ color: '#6F4E37' }}>All items are well-stocked!</li>
+                        <li className="list-item no-results">All items are well-stocked!</li>
                     )}
                 </ul>
             </div>
@@ -323,124 +283,191 @@ const SideCards = () => {
     );
 };
 
+// Placeholder for AnalyticsLineChartCard
+const AnalyticsLineChartCard = () => {
+    const [timeframe, setTimeframe] = useState('weekly');
+    const [chartData, setChartData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const backendUrl = 'http://localhost:3001';
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
+    useEffect(() => {
+        const fetchChartData = async () => {
+            setIsLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setChartData([]);
+                setIsLoading(false);
+                return;
+            }
+            try {
+                const response = await axios.get(`${backendUrl}/api/analytics/sales?timeframe=${timeframe}`, { headers: getAuthHeaders() });
+                setChartData(Array.isArray(response.data) ? response.data : []);
+            } catch (error) {
+                console.error("Error fetching line chart data:", error.response?.data || error.message);
+                setChartData([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchChartData();
+    }, [timeframe]);
+
+    return (
+        <div className="card analytics-chart-card">
+            <div className="analytics-header">
+                <h3>Sales Report</h3>
+                <div className="timeframe-selector">
+                    <button className={`status-badge ${timeframe === 'weekly' ? 'active' : ''}`} onClick={() => setTimeframe('weekly')}>Weekly</button>
+                    <button className={`status-badge ${timeframe === 'monthly' ? 'active' : ''}`} onClick={() => setTimeframe('monthly')}>Monthly</button>
+                    <button className={`status-badge ${timeframe === 'yearly' ? 'active' : ''}`} onClick={() => setTimeframe('yearly')}>Yearly</button>
+                </div>
+            </div>
+            {isLoading ? (
+                <div className="loading-state"><div className="spinner"></div><p>Loading chart data...</p></div>
+            ) : chartData.length > 0 ? (
+                <p className="chart-placeholder">Chart component for sales data here...</p>
+            ) : (
+                <p className="chart-placeholder">No data available for {timeframe} timeframe.</p>
+            )}
+        </div>
+    );
+};
+
+// Placeholder for AnalyticsBarCharts
+const AnalyticsBarCharts = () => {
+    const [timeframe, setTimeframe] = useState('weekly');
+    const [chartData, setChartData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const backendUrl = 'http://localhost:3001';
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
+    useEffect(() => {
+        const fetchChartData = async () => {
+            setIsLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setChartData([]);
+                setIsLoading(false);
+                return;
+            }
+            try {
+                const response = await axios.get(`${backendUrl}/api/analytics/bar-data`, { headers: getAuthHeaders() });
+                setChartData(Array.isArray(response.data) ? response.data : []);
+            } catch (error) {
+                console.error("Error fetching bar chart data:", error.response?.data || error.message);
+                setChartData([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchChartData();
+    }, [timeframe]);
+
+    return (
+        <div className="card analytics-chart-card">
+            <div className="analytics-header">
+                <h3>Order Analytics</h3>
+                <div className="timeframe-selector">
+                    <button className={`status-badge ${timeframe === 'weekly' ? 'active' : ''}`} onClick={() => setTimeframe('weekly')}>Weekly</button>
+                    <button className={`status-badge ${timeframe === 'monthly' ? 'active' : ''}`} onClick={() => setTimeframe('monthly')}>Monthly</button>
+                    <button className={`status-badge ${timeframe === 'yearly' ? 'active' : ''}`} onClick={() => setTimeframe('yearly')}>Yearly</button>
+                </div>
+            </div>
+            {isLoading ? (
+                <div className="loading-state"><div className="spinner"></div><p>Loading chart data...</p></div>
+            ) : chartData.length > 0 ? (
+                <p className="chart-placeholder">Chart component for order data here...</p>
+            ) : (
+                <p className="chart-placeholder">No data available.</p>
+            )}
+        </div>
+    );
+};
+
+// Error Boundary Component - Catches errors in its child components
+class ErrorBoundary extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error('Error caught in ErrorBoundary:', error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h2 className="text-red-500">Something went wrong. Please refresh the page.</h2>;
+        }
+        return this.props.children;
+    }
+}
 
 // Main Dashboard Page Component
 const DashboardPage = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [ordersUpdateTrigger, setOrdersUpdateTrigger] = useState(0);
-
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
-
-    const handleOrderCreated = () => {
-        setOrdersUpdateTrigger(prev => prev + 1);
-        closeModal();
+    const [orders, setOrders] = useState([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const backendUrl = 'http://localhost:3001';
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { Authorization: `Bearer ${token}` } : {};
     };
 
-    // Placeholder for AnalyticsLineChartCard
-    const AnalyticsLineChartCard = () => {
-        const [timeframe, setTimeframe] = useState('weekly');
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
-        useEffect(() => {
-            const fetchChartData = async () => {
-                try {
-                    // This endpoint needs to be implemented in server.js and protected
-                    const response = await axios.get(`${backendUrl}/api/analytics/sales?timeframe=${timeframe}`, { headers: getAuthHeaders() });
-                    console.log("Sales Report Data:", response.data);
-                } catch (error) {
-                    console.error("Error fetching line chart data:", error);
-                }
-            };
-            fetchChartData();
-        }, [timeframe, backendUrl]);
-
-        return (
-            <div className="card">
-                <div className="analytics-header">
-                    <h3>Sales Report</h3>
-                    <div className="timeframe-selector" style={{ display: 'flex', gap: '8px' }}>
-                        <button className={`status-badge ${timeframe === 'weekly' ? 'active' : ''}`} onClick={() => setTimeframe('weekly')} style={{ cursor: 'pointer' }}>Weekly</button>
-                        <button className={`status-badge ${timeframe === 'monthly' ? 'active' : ''}`} onClick={() => setTimeframe('monthly')} style={{ cursor: 'pointer' }}>Monthly</button>
-                        <button className={`status-badge ${timeframe === 'yearly' ? 'active' : ''}`} onClick={() => setTimeframe('yearly')} style={{ cursor: 'pointer' }}>Yearly</button>
-                    </div>
-                </div>
-                <p style={{ color: '#718096' }}>Line chart data here...</p>
-                <img src="https://placehold.co/400x200/F0F4F8/6F4E37?text=Sales+Chart" alt="Sales Chart" style={{ width: '100%', borderRadius: '8px' }} />
-            </div>
-        );
+    const fetchOrders = async () => {
+        setIsLoadingOrders(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setOrders([]);
+            setIsLoadingOrders(false);
+            return;
+        }
+        try {
+            const response = await axios.get(`${backendUrl}/api/orders`, { headers: getAuthHeaders() });
+            setOrders(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error fetching orders:", error.response?.data || error.message);
+            setOrders([]);
+        } finally {
+            setIsLoadingOrders(false);
+        }
     };
 
-    // Placeholder for AnalyticsBarCharts
-    const AnalyticsBarCharts = () => {
-        const [timeframe, setTimeframe] = useState('weekly');
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
-        useEffect(() => {
-            const fetchChartData = async () => {
-                try {
-                    // This endpoint needs to be implemented in server.js and protected
-                    const response = await axios.get(`${backendUrl}/api/analytics/bar-data?timeframe=${timeframe}`, { headers: getAuthHeaders() });
-                    console.log("Bar Chart Data:", response.data);
-                } catch (error) {
-                    console.error("Error fetching bar chart data:", error);
-                }
-            };
-            fetchChartData();
-        }, [timeframe, backendUrl]);
-
-        return (
-            <div className="card">
-                <div className="analytics-header">
-                    <h3>Order Analytics</h3>
-                    <div className="timeframe-selector" style={{ display: 'flex', gap: '8px' }}>
-                        <button className={`status-badge ${timeframe === 'weekly' ? 'active' : ''}`} onClick={() => setTimeframe('weekly')} style={{ cursor: 'pointer' }}>Weekly</button>
-                        <button className={`status-badge ${timeframe === 'monthly' ? 'active' : ''}`} onClick={() => setTimeframe('monthly')} style={{ cursor: 'pointer' }}>Monthly</button>
-                        <button className={`status-badge ${timeframe === 'yearly' ? 'active' : ''}`} onClick={() => setTimeframe('yearly')} style={{ cursor: 'pointer' }}>Yearly</button>
-                    </div>
-                </div>
-                <p style={{ color: '#718096' }}>Bar chart data here...</p>
-                <img src="https://placehold.co/400x200/F0F4F8/8B4513?text=Order+Chart" alt="Order Chart" style={{ width: '100%', borderRadius: '8px' }} />
-            </div>
-        );
-    };
-
+    useEffect(() => {
+        fetchOrders();
+    }, []);
 
     return (
-        <main className="main-content">
-            <Header />
-            <SummaryCards onNewOrderClick={openModal} />
-            <div className="analytics-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '24px',
-                marginBottom: '24px'
-            }}>
-                <AnalyticsLineChartCard />
-                <AnalyticsBarCharts />
+        <ErrorBoundary>
+            <div className="dashboard-page">
+                <Header />
+                <SummaryCards />
+                <div className="analytics-grid">
+                    <AnalyticsLineChartCard />
+                    <AnalyticsBarCharts />
+                </div>
+                <div className="order-payment-grid">
+                    <OrderList
+                        orders={orders}
+                        isLoading={isLoadingOrders}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                    />
+                    <SideCards />
+                </div>
             </div>
-            <div className="order-payment-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 0.5fr', // Adjust ratio as needed
-                gap: '24px',
-                '@media (max-width: 768px)': { // Basic responsive adjustment
-                    gridTemplateColumns: '1fr',
-                }
-            }}>
-                <OrderList
-                    updateTrigger={ordersUpdateTrigger}
-                />
-                <SideCards />
-            </div>
-            {/* NewOrderModal needs to be defined if you want to use it */}
-            {/*
-            <NewOrderModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onOrderCreated={handleOrderCreated}
-            />
-            */}
-        </main>
+        </ErrorBoundary>
     );
 };
 

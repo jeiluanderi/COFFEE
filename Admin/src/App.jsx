@@ -16,6 +16,7 @@ import AdminTeamMembersPage from './pages/AdminTeamMembersPage';
 import AdminBlogPostsPage from './pages/AdminBlogPostsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminInquiriesPage from './pages/AdminInquiriesPage';
+import ContentManagementPage from './pages/ContentManagementPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -54,6 +55,8 @@ function App() {
         return <AdminUsersPage />; // New page
       case 'inquiries':
         return <AdminInquiriesPage />; // New page
+      case 'content': // Add this new case
+        return <ContentManagementPage />; // Render the content management page
       case 'accounting':
         return <AccountingPage />;
       case 'settings':

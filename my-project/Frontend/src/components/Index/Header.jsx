@@ -17,8 +17,8 @@ function Header() {
     // Correctly use the hooks from their respective context files
     const { totalItems } = useCart();
     const { isLoggedIn, user, logout } = useAuth();
-    console.log("is logged===============.", isLoggedIn)
-    console.log("user ================>", user)
+    console.log("is logged==============.", isLoggedIn);
+    console.log("user ================>", user);
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -135,6 +135,17 @@ function Header() {
                     >
                         About
                     </NavLink>
+                    {/* NEW SERVICES PAGE LINK */}
+                    <NavLink
+                        to="/services"
+                        className="nav-item nav-link"
+                        style={({ isActive }) => navLinkStyle({ isActive, isHoveredProp: false })}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        Services
+                    </NavLink>
+                    {/* END OF NEW LINK */}
                     <NavLink
                         to="/locations"
                         className="nav-item nav-link"

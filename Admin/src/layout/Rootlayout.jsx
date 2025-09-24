@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     LayoutDashboard,
-    Menu,
     ShoppingBag,
-    Table,
-    Wallet,
     Settings,
     LogOut,
-    Coffee, // For Coffees/Menu Items
-    Tags, // For Categories
-    Users, // For Team Members (Baristas) and User Management
-    BookOpen, // For Blog Posts
-    ClipboardList, // For Inquiries
-    UserCheck, // More specific for User Management
+    Coffee, 
+    Tags, 
+    Users,
+    BookOpen,
+    ClipboardList,
+    UserCheck,
+    FileEdit,
+    ChevronDown, // New icon import for dropdown arrow
+    Mail, // New icon import for email
 } from 'lucide-react';
-// import '../index.css'; // Removed: Styles are now internal
 
 const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
+    const [profileOpen, setProfileOpen] = useState(false); // State for dropdown
+    const dropdownRef = useRef(null);
+
     const navItems = [
         { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' },
         { name: 'Orders', icon: ShoppingBag, page: 'orders' },
@@ -26,11 +28,26 @@ const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
         { name: 'Blog Posts', icon: BookOpen, page: 'blog-posts' },
         { name: 'Users', icon: UserCheck, page: 'users' },
         { name: 'Inquiries', icon: ClipboardList, page: 'inquiries' },
-        { name: 'Settings', icon: Settings, page: 'settings' },
+        { name: 'Content', icon: FileEdit, page: 'content' },
     ];
 
-    // Get admin name from localStorage
+    // Get admin info from localStorage
     const adminName = localStorage.getItem("username") || "Admin";
+    const adminEmail = localStorage.getItem("email") || "admin@example.com";
+
+    // Effect to handle clicks outside the dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setProfileOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownRef]);
 
     return (
         <aside className="sidebar">
@@ -48,6 +65,7 @@ const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         setCurrentPage(item.page);
+                                        setProfileOpen(false); // Close dropdown on navigation
                                     }}
                                 >
                                     <item.icon size={20} className="nav-icon" />
@@ -58,9 +76,12 @@ const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
                     </ul>
                 </nav>
             </div>
-            <div>
-                {/* Dynamic admin info */}
-                <div className="user-profile">
+            <div className="profile-section-container" ref={dropdownRef}>
+                {/* Clickable profile */}
+                <div 
+                    className={`user-profile ${profileOpen ? 'active' : ''}`}
+                    onClick={() => setProfileOpen(!profileOpen)}
+                >
                     <img
                         src={`https://placehold.co/40x40/f7b731/2c2f42?text=${adminName[0].toUpperCase()}`}
                         alt="User Profile"
@@ -70,12 +91,32 @@ const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
                         <span className="username">{adminName}</span>
                         <span className="role">Administrator</span>
                     </div>
+                    <ChevronDown size={16} className={`dropdown-arrow ${profileOpen ? 'rotate' : ''}`} />
                 </div>
 
-                <button className="logout-btn" onClick={onLogout}>
-                    <LogOut size={20} className="logout-icon" />
-                    Logout
-                </button>
+                {/* Dropdown menu */}
+                {profileOpen && (
+                    <div className="profile-dropdown">
+                        <div className="dropdown-email dropdown-item">
+                            <Mail size={16} className="dropdown-icon" />
+                            <span>{adminEmail}</span>
+                        </div>
+                        <button 
+                            className="dropdown-item" 
+                            onClick={() => {
+                                setCurrentPage('settings');
+                                setProfileOpen(false);
+                            }}
+                        >
+                            <Settings size={16} className="dropdown-icon" />
+                            Settings
+                        </button>
+                        <button className="dropdown-item logout-dropdown-item" onClick={onLogout}>
+                            <LogOut size={16} className="dropdown-icon" />
+                            Logout
+                        </button>
+                    </div>
+                )}
             </div>
         </aside>
     );
@@ -130,7 +171,7 @@ const RootLayout = ({ children, currentPage, setCurrentPage, onLogout }) => {
                     padding: 24px 0;
                     display: flex;
                     flex-direction: column;
-                    justify-content: space-between; /* Push logout to bottom */
+                    justify-content: space-between; /* Push bottom section to the end */
                     border-radius: 12px 0 0 12px; /* Rounded left corners */
                     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
                 }
@@ -185,14 +226,29 @@ const RootLayout = ({ children, currentPage, setCurrentPage, onLogout }) => {
                     margin-right: 12px;
                 }
 
-                /* User Profile */
+                /* User Profile & Dropdown Section */
+                .profile-section-container {
+                    position: relative;
+                    margin-top: auto; /* Pushes the profile section to the bottom */
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                }
+
                 .user-profile {
                     display: flex;
                     align-items: center;
                     padding: 20px 24px;
-                    margin-top: 20px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    padding-bottom: 20px;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                    justify-content: space-between;
+                }
+
+                .user-profile:hover {
+                    background-color: rgba(255, 255, 255, 0.05);
+                }
+
+                .user-profile.active {
+                    background-color: rgba(255, 255, 255, 0.1);
                 }
 
                 .user-avatar {
@@ -207,6 +263,7 @@ const RootLayout = ({ children, currentPage, setCurrentPage, onLogout }) => {
                 .user-profile-info {
                     display: flex;
                     flex-direction: column;
+                    flex-grow: 1;
                 }
 
                 .username {
@@ -218,30 +275,80 @@ const RootLayout = ({ children, currentPage, setCurrentPage, onLogout }) => {
                     font-size: 13px;
                     color: rgba(255, 255, 255, 0.7);
                 }
+                
+                .dropdown-arrow {
+                    transition: transform 0.3s ease;
+                }
 
-                /* Logout Button */
-                .logout-btn {
-                    width: calc(100% - 48px); /* Full width minus padding */
-                    margin: 20px 24px 24px 24px; /* Adjust margin */
-                    padding: 12px 15px;
-                    background-color: #dc3545; /* Red for logout */
-                    color: white;
-                    border: none;
+                .dropdown-arrow.rotate {
+                    transform: rotate(180deg);
+                }
+
+                /* Dropdown Menu */
+                .profile-dropdown {
+                    position: absolute;
+                    bottom: 100%; /* Position above the profile container */
+                    left: 24px;
+                    right: 24px;
+                    background-color: white;
                     border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 10px; /* Space between dropdown and profile */
+                    padding: 8px;
+                    z-index: 100;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .dropdown-item {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    transition: background-color 0.3s ease;
+                    padding: 10px 12px;
+                    color: #36220B;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    font-weight: 500;
+                    transition: background-color 0.2s ease;
+                    cursor: pointer;
+                    border: none;
+                    background: none;
+                    width: 100%;
+                    text-align: left;
+                }
+                
+                .dropdown-item:hover {
+                    background-color: #f0f4f8;
+                }
+                
+                .dropdown-item .dropdown-icon {
+                    color: #A0522D;
+                    margin-right: 10px;
+                }
+                
+                .dropdown-email {
+                    color: #6c757d;
+                    font-size: 13px;
+                    font-weight: 400;
+                    cursor: default;
+                    border-bottom: 1px solid #e9ecef;
+                    margin-bottom: 8px;
+                    padding-bottom: 12px;
+                }
+                
+                .dropdown-email:hover {
+                    background-color: white; /* Prevent hover effect on email */
                 }
 
-                .logout-btn:hover {
-                    background-color: #c82333;
+                .logout-dropdown-item {
+                    color: #dc3545;
                 }
-
-                .logout-icon {
-                    margin-right: 8px;
+                
+                .logout-dropdown-item:hover {
+                    background-color: #f8d7da;
+                }
+                
+                .logout-dropdown-item .dropdown-icon {
+                    color: #dc3545;
                 }
 
                 /* Main Content Area */

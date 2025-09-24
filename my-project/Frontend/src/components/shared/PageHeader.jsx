@@ -1,17 +1,15 @@
 import React from 'react';
-import coffeeHeaderBackground from '../../assets/img/coff.jpg'
-const PageHeader = ({ title, activePage }) => {
-    // Assuming a coffee-themed background image for consistency
+import coffeeHeaderBackground from '../../assets/img/coff.jpg';
 
+const PageHeader = ({ title, activePage }) => {
     const backgroundStyle = {
         backgroundImage: `url(${coffeeHeaderBackground})`,
-        backgroundSize: 'contain',
+        backgroundSize: '200px auto',
         backgroundPosition: 'center center',
-        backgroundAttachment: 'fixed', // This creates the parallax effect
+        backgroundAttachment: 'fixed',
     };
 
-    // Define the color for the active breadcrumb item
-    const activeBreadcrumbColor = ' #F8F5EB'; // Dark coffee brown for contrast
+    const activeBreadcrumbColor = 'beige'; // A dark coffee brown for visibility and contrast
 
     return (
         <div className="container-fluid page-header py-5 mb-5 wow fadeIn" data-wow-delay="0.1s" style={backgroundStyle}>
@@ -19,8 +17,8 @@ const PageHeader = ({ title, activePage }) => {
                 <h1 className="display-3 text-white mb-4 animated slideInDown">{title}</h1>
                 <nav aria-label="breadcrumb animated slideInDown">
                     <ol className="breadcrumb justify-content-center mb-0">
-                        <li className="breadcrumb-item"><a href="#" className="text-white">Home</a></li> {/* Added text-white for visibility */}
-                        <li className="breadcrumb-item"><a href="#" className="text-white">Shop</a></li> {/* Added text-white for visibility */}
+                        <li className="breadcrumb-item"><a href="#" className="text-beige">Home</a></li>
+                        <li className="breadcrumb-item"><a href="#" className="text-beige">Shop</a></li>
                         <li className="breadcrumb-item active" aria-current="page" style={{ color: activeBreadcrumbColor, fontWeight: 'bold' }}>
                             {activePage}
                         </li>

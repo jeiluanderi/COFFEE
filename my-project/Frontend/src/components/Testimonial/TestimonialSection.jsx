@@ -1,125 +1,187 @@
-import React, { useRef } from 'react';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react'; 
+import TestimonialSubmissionModal from '../TestimonialSubmissionModal';
 
-// Import local images for the testimonial items (user will replace these)
-import testimonialImg1 from '../../assets/img/customer-1.jpg'; // Placeholder for happy customer
-import testimonialImg2 from '../../assets/img/customer-2.jpg'; // Placeholder for another happy customer
-import testimonialImg3 from '../../assets/img/customer-3.jpg'; // Added another testimonial image
-import testimonialImg4 from '../../assets/img/customer-4.jpg'; // Added another testimonial image
-
-// Data for the testimonial items
-const testimonialsData = [
-    {
-        imageSrc: testimonialImg1,
-        quote: 'COFFEE has truly mastered the art of brewing! Every cup is a delightful experience, and their cozy atmosphere makes it my favorite spot to unwind. Highly recommend!',
-        clientName: 'Sarah J.',
-        profession: 'Freelance Designer',
-    },
-    {
-        imageSrc: testimonialImg2,
-        quote: 'The pastries here are out of this world, and the latte art is simply stunning. It\'s more than just a coffee shop; it\'s a daily dose of joy and creativity!',
-        clientName: 'Liya T.',
-        profession: 'Local Artist',
-    },
-    {
-        imageSrc: testimonialImg3,
-        quote: 'I count on COFFEE for my morning pick-me-up. Their cold brew is incredibly smooth, and the staff are always so friendly and welcoming. A true gem!',
-        clientName: 'Jessica L.',
-        profession: 'Marketing Manager',
-    },
-    {
-        imageSrc: testimonialImg4,
-        quote: 'As a coffee connoisseur, I\'m always looking for quality. BrewHaven\'s single-origin roasts are exceptional, and their knowledge of coffee is impressive. Five stars!',
-        clientName: 'Dina K.',
-        profession: 'Coffee Enthusiast',
-    },
-];
+// This is the correct way to get the environment variable for Vite.
+// You must have a .env file with VITE_API_URL=http://localhost:3001
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const TestimonialSection = () => {
-    const sliderRef = useRef(null);
+    const [testimonials, setTestimonials] = useState([]);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [showAllTestimonials, setShowAllTestimonials] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
 
-    const settings = {
-        dots: false,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: false, // Hide built-in arrows
-        autoplay: true, // Auto-play the slider
-        autoplaySpeed: 5000, // Change slide every 5 seconds
+    const fetchTestimonials = async () => {
+        try {
+            // Use the apiUrl variable that was declared outside the function.
+            // Do NOT re-declare it with `process.env` here.
+            const response = await fetch(`${apiUrl}/api/testimonials`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setTestimonials(data.map(t => ({
+                ...t,
+                imageSrc: t.image_url || `https://placehold.co/120x120/E8E2D7/4A2C2A?text=${t.client_name.charAt(0)}`,
+                id: t.id // Ensure ID exists for the key prop
+            })));
+        } catch (error) {
+            console.error("Failed to fetch testimonials:", error);
+            setTestimonials([]); // Set to an empty array on failure
+        }
     };
 
-    // Define colors for consistency
+    useEffect(() => {
+        fetchTestimonials();
+
+        // This should check your auth context or local storage for a token
+        const token = localStorage.getItem('token'); 
+        setIsLoggedIn(!!token); 
+    }, []);
+
+    useEffect(() => {
+        if (testimonials.length > 0 && !showAllTestimonials) {
+            const timer = setTimeout(() => {
+                const nextSlide = (currentSlide + 1) % testimonials.length;
+                setCurrentSlide(nextSlide);
+            }, 5000); // Change slide every 5 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [currentSlide, testimonials, showAllTestimonials]);
+
+    const handleNewTestimonialSubmitted = () => {
+        fetchTestimonials();
+    };
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % testimonials.length);
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    };
+
     const colors = {
-        primary: '#8B4513',   // Saddle Brown
-        secondary: '#6F4E37', // Coffee Brown
-        light: '#F8F5EB',     // Creamy White
-        dark: '#36220B'       // Dark Coffee Bean
+        primary: '#8B4513',
+        secondary: '#6F4E37',
+        light: '#F8F5EB',
+        dark: '#36220B'
     };
 
     return (
         <div className="container-xxl py-5">
-            {/* Internal CSS for the testimonial items and slider controls */}
             <style jsx>{`
                 .testimonial-item {
                     text-align: center;
-                    background-color: white; /* White background for the testimonial box */
+                    background-color: white;
                     border-radius: 10px;
                     padding: 2.5rem;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* Soft shadow */
-                    margin: 0 15px; /* Spacing between slider items if slidesToShow > 1 */
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+                    margin: 0 15px;
                     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
                 }
                 .testimonial-item img {
-                    width: 120px; /* Fixed width for circular images */
-                    height: 120px; /* Fixed height for circular images */
+                    width: 120px;
+                    height: 120px;
                     object-fit: cover;
-                    border-radius: 50%; /* Make images circular */
-                    border: 4px solid ${colors.primary}; /* Primary color border */
+                    border-radius: 50%;
+                    border: 4px solid ${colors.primary};
                     margin-bottom: 1.5rem;
                 }
                 .testimonial-item h4 {
-                    color: ${colors.dark}; /* Dark client name */
+                    color: ${colors.dark};
                     margin-bottom: 0.25rem;
                 }
                 .testimonial-item span {
-                    color: ${colors.secondary}; /* Secondary color for profession */
+                    color: ${colors.secondary};
                     font-style: italic;
                 }
                 .testimonial-item p {
-                    color: ${colors.dark}; /* Dark text for quote */
+                    color: ${colors.dark};
                     margin-bottom: 1rem;
                     line-height: 1.6;
                 }
-
-                /* Custom Arrow Styling */
                 .custom-arrow {
-                    background-color: ${colors.light}; /* Cream background */
-                    color: ${colors.secondary}; /* Coffee brown icon */
-                    border: 1px solid ${colors.secondary}; /* Coffee brown border */
-                    width: 50px; /* Size of the button */
-                    height: 50px; /* Size of the button */
+                    background-color: ${colors.light};
+                    color: ${colors.secondary};
+                    border: 1px solid ${colors.secondary};
+                    width: 50px;
+                    height: 50px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 1.2rem;
-                    transition: all 0.3s ease; /* Smooth transition */
+                    transition: all 0.3s ease;
+                    border-radius: 50%;
                 }
                 .custom-arrow:hover {
-                    background-color: ${colors.primary}; /* Saddle brown on hover */
-                    color: white; /* White icon on hover */
+                    background-color: ${colors.primary};
+                    color: white;
                     border-color: ${colors.primary};
-                    transform: scale(1.1); /* Subtle zoom effect */
+                    transform: scale(1.1);
                 }
-
-                /* Override Slick Carousel default styles for navigation */
-                .slick-slide {
-                    padding: 0 10px; /* Adjust slide padding to prevent cropping */
+                .testimonial-slider-container {
+                    overflow: hidden;
+                    position: relative;
                 }
-                .slick-list {
-                    margin: 0 -10px; /* Counteract slide padding */
+                .testimonial-slide-content {
+                    display: flex;
+                    transition: transform 0.5s ease-in-out;
+                }
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    animation: fadeIn 0.3s ease-in-out;
+                }
+                .modal-content {
+                    background-color: ${colors.light};
+                    border-radius: 15px;
+                    padding: 2.5rem;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 80%;
+                    overflow-y: auto;
+                    position: relative;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                    animation: slideUp 0.3s ease-in-out;
+                }
+                .modal-close {
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    color: ${colors.dark};
+                }
+                .modal-testimonial-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 1.5rem 0;
+                    border-bottom: 1px solid ${colors.secondary};
+                }
+                .modal-testimonial-item:last-child {
+                    border-bottom: none;
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { transform: translateY(50px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
                 }
             `}</style>
             <div className="container">
@@ -128,43 +190,99 @@ const TestimonialSection = () => {
                     <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.1s">
                         <p className="fs-5 fw-bold text-primary">Customer Stories</p>
                         <h1 className="display-5 mb-5">What Our Guests Love About Us!</h1>
-                        <p className="mb-4">Hear directly from our valued customers about their COFFEE experience. Their joy is our greatest reward.</p>
-                        <a className="btn py-3 px-4" href="#" style={{ backgroundColor: colors.primary, color: 'white' }}>Read All Testimonials</a>
+                        <p className="mb-4">Hear directly from our valued customers about their BrewHaven Coffee experience. Their joy is our greatest reward.</p>
+
+                        <div className="d-flex flex-wrap gap-2">
+                             <button
+                                 className="btn py-3 px-4"
+                                 onClick={() => setShowAllTestimonials(true)}
+                                 style={{ backgroundColor: colors.primary, color: 'white' }}
+                             >
+                                 Read All Testimonials
+                             </button>
+                             {isLoggedIn && (
+                                 <button
+                                     className="btn py-3 px-4"
+                                     onClick={() => setIsSubmissionModalOpen(true)}
+                                     style={{ backgroundColor: colors.light, color: colors.secondary, border: `1px solid ${colors.secondary}` }}
+                                 >
+                                     <PlusCircle size={20} className="me-2" />
+                                     Add Your Testimonial
+                                 </button>
+                             )}
+                        </div>
                     </div>
 
                     {/* Right Column - Slider with Custom Controls */}
                     <div className="col-lg-7 wow fadeInUp" data-wow-delay="0.5s">
-                        <Slider {...settings} ref={sliderRef}>
-                            {testimonialsData.map((testimonial, index) => (
-                                <div key={index}>
-                                    <div className="testimonial-item">
-                                        <img className="img-fluid" src={testimonial.imageSrc} alt={testimonial.clientName} />
-                                        <p className="fs-5">{testimonial.quote}</p>
-                                        <h4>{testimonial.clientName}</h4>
-                                        <span>{testimonial.profession}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </Slider>
-
-                        {/* Custom Navigation Buttons below the slider */}
-                        <div className="d-flex justify-content-center mt-4"> {/* Increased margin-top for spacing */}
-                            <button
-                                className="btn rounded-circle me-3 custom-arrow" // Increased me-2 to me-3
-                                onClick={() => sliderRef.current.slickPrev()}
+                        <div className="testimonial-slider-container">
+                            <div
+                                className="testimonial-slide-content"
+                                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                             >
-                                <i className="fa fa-chevron-left"></i>
+                                {testimonials.length > 0 ? (
+                                    testimonials.map((testimonial) => (
+                                        <div key={testimonial.id} style={{ minWidth: '100%' }}>
+                                            <div className="testimonial-item">
+                                                <img className="img-fluid" src={testimonial.imageSrc} alt={testimonial.clientName} />
+                                                <p className="fs-5">{testimonial.quote}</p>
+                                                <h4>{testimonial.clientName}</h4>
+                                                <span>{testimonial.profession}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div style={{ minWidth: '100%' }}>
+                                        <p className="text-center">No testimonials found. Be the first to add one!</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {/* Custom Navigation Buttons below the slider */}
+                        <div className="d-flex justify-content-center mt-4">
+                            <button
+                                className="btn me-3 custom-arrow"
+                                onClick={prevSlide}
+                                aria-label="Previous Testimonial"
+                            >
+                                <ChevronLeft size={24} />
                             </button>
                             <button
-                                className="btn rounded-circle custom-arrow"
-                                onClick={() => sliderRef.current.slickNext()}
+                                className="btn custom-arrow"
+                                onClick={nextSlide}
+                                aria-label="Next Testimonial"
                             >
-                                <i className="fa fa-chevron-right"></i>
+                                <ChevronRight size={24} />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* All Testimonials Modal */}
+            {showAllTestimonials && (
+                <div className="modal-overlay" onClick={() => setShowAllTestimonials(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close" onClick={() => setShowAllTestimonials(false)}>&times;</button>
+                        <h2 className="text-center display-5 mb-4" style={{ color: colors.dark }}>All Testimonials</h2>
+                        {testimonials.map((testimonial) => (
+                            <div key={testimonial.id} className="modal-testimonial-item">
+                                <img src={testimonial.imageSrc} alt={testimonial.clientName} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem' }} />
+                                <p className="text-center" style={{ color: colors.dark, fontSize: '1rem', lineHeight: '1.5' }}>{testimonial.quote}</p>
+                                <h4 className="mt-2" style={{ color: colors.dark, fontSize: '1.2rem' }}>{testimonial.clientName}</h4>
+                                <span style={{ color: colors.secondary, fontStyle: 'italic' }}>{testimonial.profession}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
+            {/* New Testimonial Submission Modal */}
+            <TestimonialSubmissionModal
+                isOpen={isSubmissionModalOpen}
+                onClose={() => setIsSubmissionModalOpen(false)}
+                onSubmitted={handleNewTestimonialSubmitted}
+            />
         </div>
     );
 };

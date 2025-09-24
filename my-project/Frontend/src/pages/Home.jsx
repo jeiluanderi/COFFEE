@@ -6,7 +6,7 @@ import Features from '../components/Index/Features';
 import Service from '../components/Index/Service';
 import Testimonial from '../components/Index/Testimonial';
 import FactCounter from '../components/FactCounter/FactCounter';
-import Spinner from '../components/shared/Spinner';
+import Spinner from '../components/Shared/Spinner';
 import InquiryFormSection from '../components/Index/InquiryFormSection';
 import TeamSection from '../components/Index/Team';
 import axios from 'axios';

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../components/Locations/PageHeader';
-import ProjectsSection from '../components/Locations/ProjectsSection';
-import Spinner from '../components/shared/Spinner';
+// import PageHeader from '../components/Shared/PageHeader';
+import LocationsSection from '../components/Locations/Locations';
+import Spinner from '../components/Shared/Spinner';
 
-function ProjectPage() {
+function LocationsPage() {
     // 1. Create a state variable to track the loading status
     const [loading, setLoading] = useState(true);
 
@@ -27,12 +27,12 @@ function ProjectPage() {
             ) : (
                 // 3. Render the rest of the page content when 'loading' is false
                 <>
-                    <PageHeader />
-                    <ProjectsSection />
+                    {/* <PageHeader /> */}
+                    <LocationsSection />
                 </>
             )}
         </>
     );
 }
 
-export default ProjectPage;
+export default LocationsPage;

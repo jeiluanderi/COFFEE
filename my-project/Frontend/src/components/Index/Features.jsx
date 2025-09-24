@@ -1,23 +1,4 @@
-import React from 'react';
-
-// Data for the feature cards
-const featureData = [
-    {
-        iconClass: 'fa-check',
-        title: 'Freshly Roasted',
-        delay: '0.3s'
-    },
-    {
-        iconClass: 'fa-users',
-        title: 'Expert Baristas',
-        delay: '0.5s'
-    },
-    {
-        iconClass: 'fa-tools',
-        title: 'Handcrafted Drinks',
-        delay: '0.7s'
-    },
-];
+import React, { useState, useEffect } from 'react';
 
 // Reusable Feature Card Component
 const FeatureCard = ({ iconClass, title, delay }) => (
@@ -33,6 +14,54 @@ const FeatureCard = ({ iconClass, title, delay }) => (
 
 // Main Component for the section
 const WhyChooseUs = () => {
+    const [features, setFeatures] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchFeatures = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/why-choose-us-features');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setFeatures(data);
+            } catch (err) {
+                console.error("Failed to fetch features:", err);
+                setError("Failed to load features. Please check the server connection.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchFeatures();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="container-xxl py-5">
+                <div className="container">
+                    <div className="text-center w-full">
+                        <p className="text-xl">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container-xxl py-5">
+                <div className="container">
+                    <div className="text-center w-full">
+                        <p className="text-xl text-red-600">{error}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container-xxl py-5">
             <div className="container">
@@ -48,12 +77,12 @@ const WhyChooseUs = () => {
                     {/* Right Column - Feature Cards */}
                     <div className="col-lg-6">
                         <div className="row g-4">
-                            {featureData.map((feature, index) => (
+                            {features.map((feature, index) => (
                                 <FeatureCard
-                                    key={index}
-                                    iconClass={feature.iconClass}
-                                    title={feature.title}
-                                    delay={feature.delay}
+                                    key={feature.id}
+                                    iconClass={feature.icon_class}
+                                    title={feature.feature_title}
+                                    delay={`${(index * 0.2) + 0.3}s`}
                                 />
                             ))}
                         </div>
