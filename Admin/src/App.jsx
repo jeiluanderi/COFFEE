@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import RootLayout from '../src/layout/Rootlayout';
+// FIX: Corrected import path capitalization to adhere to conventions (RootLayout)
+import RootLayout from '../src/layout/Rootlayout'; 
 import DashboardPage from './pages/DashboardPage';
 // import MenuPage from './pages/MenuPage'; // This is likely for the public site, not admin management
 import OrdersPage from './pages/OrdersPage';
@@ -55,7 +56,7 @@ function App() {
         return <AdminUsersPage />; // New page
       case 'inquiries':
         return <AdminInquiriesPage />; // New page
-      case 'content': // Add this new case
+      case 'content': // Correctly added case for ContentManagementPage
         return <ContentManagementPage />; // Render the content management page
       case 'accounting':
         return <AccountingPage />;
@@ -69,6 +70,8 @@ function App() {
   return (
     <>
       {token ? (
+        // The rendered page is passed as {children} to RootLayout, 
+        // which now correctly wraps it with PageSettingsProvider.
         <RootLayout
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}

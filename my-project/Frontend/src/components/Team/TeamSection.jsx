@@ -47,6 +47,7 @@ const TeamSection = () => {
                     <img className="img-fluid" src={imageUrl} alt={name} />
                     <div className="team-social">
                         <a className="btn btn-link text-light" href="https://facebook.com/yourprofile" target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
+                       
                         <a className="btn btn-link text-light" href="https://twitter.com/yourprofile" target="_blank" rel="noopener noreferrer"><i className="fab fa-twitter"></i></a>
                         <a className="btn btn-link text-light" href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
                         <a className="btn btn-link text-light" href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>

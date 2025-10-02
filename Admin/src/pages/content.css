@@ -177,7 +177,28 @@ flex-direction: column;
 }
 }
 / Add these styles to your existing src/pages/content.css file */
+/* In content.css */
 
+.content-dashboard-grid {
+    display: grid;
+    /* Default layout for smaller cards */
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.content-card {
+    /* Existing card styling */
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: white;
+}
+
+/* This is the key style for the new component */
+.content-card.full-width-card {
+    grid-column: 1 / -1; /* Make it span all columns */
+}
 /* Dashboard Grid Layout */
 .content-dashboard-grid {
 display: flex;

@@ -113,11 +113,32 @@ const OrdersPage = () => {
             showMessage(`Failed to update order status.`, 'error');
         }
     };
+    
+    // Delete an order (only works if status = rejected)
+    const deleteOrder = async (orderId) => {
+        try {
+            await axios.delete(`${backendUrl}/api/orders/${orderId}`, {
+                headers: getAuthHeaders(),
+            });
+            setOrders(prevOrders => prevOrders.filter(order => order._id !== orderId));
+            showMessage(`Order ${orderId} deleted successfully.`, 'success');
+        } catch (err) {
+            console.error(`Failed to delete order ${orderId}:`, err);
+            showMessage(`Failed to delete order.`, 'error');
+        }
+    };
 
-    const filteredOrders = orders.filter(order =>
-        order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order._id?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOrders = orders.filter(order => {
+        const search = searchTerm.toLowerCase();
+        return (
+            order.customerName?.toLowerCase().includes(search) ||
+            order._id?.toString().toLowerCase().includes(search) ||
+            order.status?.toLowerCase().includes(search) ||
+            order.paymentStatus?.toLowerCase().includes(search)
+        );
+    });
+    console.log("SearchTerm:", searchTerm, "Results:", filteredOrders);
+
 
     const indexOfLastOrder = currentPage * ordersPerPage;
     const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -188,27 +209,48 @@ const OrdersPage = () => {
             margin: 0 auto;
         }
         
-        .page-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
+      .page-header {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: flex-start; /* Align children to the left */
+    margin-bottom: 2rem;
+    max-width: 1200px; /* Keep this to align with main content */
+    margin: 0 auto 2rem; /* Keep this for centering */
+}
+
+.search-container {
+    position: relative;
+    width: 100%; /* The search bar will now take up the full width */
+    max-width: 400px; /* Optional: Keep a maximum width for aesthetics */
+    margin-top: 1rem; /* Add some space between the title and the search bar */
+}
+
+/* Optional: Adjust the title if needed */
+.page-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+        .delete-button {
+           padding: 0.5rem 1rem;
+           border: none;
+           border-radius: 6px;
+           background-color: #dc3545;
+           color: white;
+           font-weight: 600;
+           cursor: pointer;
+           transition: background-color 0.2s ease;
+           margin-left: 0.5rem;
         }
 
-        .page-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin: 0;
-            position: relative;
-        }
+         .delete-button:hover {
+              background-color: #b02a37;
+          }
+    
+       
 
-        .search-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin-left: auto;
-        }
 
         .search-icon {
             position: absolute;
@@ -407,7 +449,7 @@ const OrdersPage = () => {
             background-color: #d4edda;
             color: #155724;
         }
-
+        
         .order-details-container {
             margin-top: 1rem;
             border-top: 1px solid #e0e0e0;
@@ -557,7 +599,7 @@ const OrdersPage = () => {
                             <h4>Total Amount</h4>
                             <h4>Payment</h4>
                             <h4>Status</h4>
-                            <h4>Details</h4>
+                            <h4>Actions</h4> {/* Changed "Details" to "Actions" for clarity */}
                         </div>
                     )}
                     {isLoading ? (
@@ -569,105 +611,124 @@ const OrdersPage = () => {
                         <div className="error-state">
                             <p>{error}</p>
                         </div>
-                    ) : filteredOrders.length > 0 ? (
-                        <>
-                            <motion.ul className="orders-list" variants={containerVariants} initial="hidden" animate="visible">
-                                <AnimatePresence>
-                                    {currentOrders.map(order => (
-                                        <motion.li key={order._id} className="order-item" variants={itemVariants} exit={{ opacity: 0, x: -50 }}>
-                                            <div className="order-summary">
-                                                <div className="order-detail-group">
-                                                    <p>{order._id}</p>
-                                                </div>
-                                                <div className="order-detail-group">
-                                                    <p>{order.customerName}</p>
-                                                </div>
-                                                <div className="order-detail-group">
-                                                    <p>${order.totalAmount?.toFixed(2)}</p>
-                                                </div>
-                                                <div className="order-detail-group">
-                                                    <PaymentBadge status={order.paymentStatus} />
-                                                </div>
-                                                <div className="order-detail-group">
-                                                    <select
-                                                        value={order.status}
-                                                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                                                        className="status-dropdown"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <option value="pending">Pending</option>
-                                                        <option value="ready">Ready</option>
-                                                        <option value="in progress">In Progress</option>
-                                                        <option value="rejected">Rejected</option>
-                                                    </select>
-                                                </div>
-                                                <div className="order-detail-group" onClick={() => toggleOrderDetails(order._id)}>
-                                                    {expandedOrderId === order._id ? (
-                                                        <ChevronUp size={20} className="text-gray-500" />
-                                                    ) : (
-                                                        <ChevronDown size={20} className="text-gray-500" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <AnimatePresence>
-                                                {expandedOrderId === order._id && (
-                                                    <motion.div
-                                                        className="order-details-container"
-                                                        variants={detailsVariants}
-                                                        initial="hidden"
-                                                        animate="visible"
-                                                        exit="hidden"
-                                                    >
-                                                        <h4>Ordered Items</h4>
-                                                        <ul className="items-list">
-                                                            {order.items && order.items.length > 0 ? (
-                                                                order.items.map((item) => (
-                                                                    <li key={item.coffee_id} className="item-row">
-                                                                        <span className="item-name">{item.coffee_name}</span>
-                                                                        <span className="item-quantity">x{item.quantity}</span>
-                                                                        <span className="item-price">
-                                                                            ${item.price_at_time_of_order?.toFixed(2) || '0.00'}
-                                                                        </span>
-                                                                    </li>
-                                                                ))
-                                                            ) : (
-                                                                <li className="text-sm italic text-gray-500">
-                                                                    No items found for this order.
-                                                                </li>
-                                                            )}
-                                                        </ul>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </motion.li>
-                                    ))}
-                                </AnimatePresence>
-                            </motion.ul>
-                            <div className="pagination-container">
-                                <button
-                                    className="pagination-button"
-                                    onClick={() => paginate(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => (
-                                    <button
-                                        key={i + 1}
-                                        className={`pagination-button ${currentPage === i + 1 ? 'active' : ''}`}
-                                        onClick={() => paginate(i + 1)}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
-                                <button
-                                    className="pagination-button"
-                                    onClick={() => paginate(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </button>
-                            </div>
+                    ) : filteredOrders.length > 0 ? ( <>
+<motion.ul className="orders-list" variants={containerVariants} initial="hidden" animate="visible">
+    <AnimatePresence>
+        {currentOrders.map(order => (
+            <motion.li key={order._id} className="order-item" variants={itemVariants} exit={{ opacity: 0, x: -50 }}>
+                <div className="order-summary">
+                    <div className="order-detail-group">
+                        <p>{order._id}</p>
+                    </div>
+                    <div className="order-detail-group">
+                        <p>{order.customerName}</p>
+                    </div>
+                    <div className="order-detail-group">
+                        <p>${order.totalAmount?.toFixed(2)}</p>
+                    </div>
+                    <div className="order-detail-group">
+                        <PaymentBadge status={order.paymentStatus} />
+                    </div>
+                    <div className="order-detail-group">
+                        <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                            className="status-dropdown"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <option value="pending">Pending</option>
+                            <option value="ready">Ready</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    
+                    <div className="order-actions">
+                        {order.status === "rejected" && (
+                            <button
+                                className="delete-button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm("Are you sure you want to delete this order?")) {
+                                        deleteOrder(order._id);
+                                    }
+                                }}
+                            >
+                                Delete
+                            </button>
+                        )}
+                        <button
+                          className="toggle-details-button"
+                          onClick={() => toggleOrderDetails(order._id)}
+                          aria-expanded={expandedOrderId === order._id}
+                        >
+                            {expandedOrderId === order._id ? (
+                                <ChevronUp size={20} className="text-gray-500" />
+                            ) : (
+                                <ChevronDown size={20} className="text-gray-500" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+                <AnimatePresence>
+                    {expandedOrderId === order._id && (
+                        <motion.div
+                            className="order-details-container"
+                            variants={detailsVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                        >
+                            <h4>Ordered Items</h4>
+                            <ul className="items-list">
+                                {order.items && order.items.length > 0 ? (
+                                    order.items.map((item) => (
+                                        <li key={item.coffee_id} className="item-row">
+                                            <span className="item-name">{item.coffee_name}</span>
+                                            <span className="item-quantity">x{item.quantity}</span>
+                                            <span className="item-price">
+                                                ${item.price_at_time_of_order?.toFixed(2) || '0.00'}
+                                            </span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="text-sm italic text-gray-500">
+                                        No items found for this order.
+                                    </li>
+                                )}
+                            </ul>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.li>
+        ))}
+    </AnimatePresence>
+</motion.ul>
+<div className="pagination-container">
+    <button
+        className="pagination-button"
+        onClick={() => paginate(currentPage - 1)}
+        disabled={currentPage === 1}
+    >
+        Previous
+    </button>
+    {Array.from({ length: totalPages }, (_, i) => (
+        <button
+            key={i + 1}
+            className={`pagination-button ${currentPage === i + 1 ? 'active' : ''}`}
+            onClick={() => paginate(i + 1)}
+        >
+            {i + 1}
+        </button>
+    ))}
+    <button
+        className="pagination-button"
+        onClick={() => paginate(currentPage + 1)}
+        disabled={currentPage === totalPages}
+    >
+        Next
+    </button>
+</div>
                         </>
                     ) : (
                         <div className="no-results">

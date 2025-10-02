@@ -91,7 +91,7 @@ const InquiryFormSection = () => {
 
     return (
         <div className="container-fluid quote my-5 py-5" style={backgroundStyle}>
-            <style jsx>{`
+            <style >{`
                 .form-box {
                     background-color: white;
                     border-radius: 8px;

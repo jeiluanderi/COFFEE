@@ -1,4 +1,3 @@
-// routes/categoryAdminRoutes.js (Corrected Code)
 const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
@@ -14,7 +13,7 @@ const pool = new Pool({
 });
 
 // GET /api/admin/categories - Paginated route for the admin dashboard
-// This path now matches both /admin and /admin/
+// We now select the 'icon_name' field as well
 router.get('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -25,7 +24,7 @@ router.get('/', authenticateToken, authorizeRoles('admin'), async (req, res) => 
         const totalCount = parseInt(totalCountResult.rows[0].count);
 
         const categoriesQuery = `
-            SELECT id, name FROM categories
+            SELECT id, name, icon_name FROM categories
             ORDER BY name ASC
             OFFSET $1
             LIMIT $2;
@@ -45,15 +44,16 @@ router.get('/', authenticateToken, authorizeRoles('admin'), async (req, res) => 
 });
 
 // POST /api/admin/categories - Create a new category
+// This route now inserts the icon_name as well
 router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
-    const { name } = req.body;
-    if (!name) {
-        return res.status(400).json({ message: 'Category name is required.' });
+    const { name, icon_name } = req.body;
+    if (!name || !icon_name) {
+        return res.status(400).json({ message: 'Category name and icon are required.' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO categories (name) VALUES ($1) RETURNING id, name',
-            [name]
+            'INSERT INTO categories (name, icon_name) VALUES ($1, $2) RETURNING id, name, icon_name',
+            [name, icon_name]
         );
         res.status(201).json({ message: 'Category added successfully!', category: result.rows[0] });
     } catch (err) {
@@ -66,16 +66,17 @@ router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) =>
 });
 
 // PUT /api/admin/categories/:id - Update an existing category
+// This route now updates the icon_name field as well
 router.put('/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
     const { id } = req.params;
-    const { name } = req.body;
-    if (!name) {
-        return res.status(400).json({ message: 'New category name is required.' });
+    const { name, icon_name } = req.body;
+    if (!name || !icon_name) {
+        return res.status(400).json({ message: 'New category name and icon are required.' });
     }
     try {
         const result = await pool.query(
-            'UPDATE categories SET name = $1 WHERE id = $2 RETURNING id, name',
-            [name, id]
+            'UPDATE categories SET name = $1, icon_name = $2 WHERE id = $3 RETURNING id, name, icon_name',
+            [name, icon_name, id]
         );
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Category not found.' });

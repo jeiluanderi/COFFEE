@@ -157,20 +157,31 @@ router.put("/:id", authenticateToken, authorizeRoles("admin"), async (req, res) 
 // =======================
 // DELETE /orders/:id - Admin Only
 // =======================
+// DELETE /orders/:id - Admin Only, only deletes rejected or pending
 router.delete("/:id", authenticateToken, authorizeRoles("admin"), async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query("DELETE FROM order_items WHERE order_id = $1", [id]);
-    const result = await pool.query("DELETE FROM orders WHERE id = $1 RETURNING id", [id]);
-
-    if (result.rowCount === 0) {
+    // check status first
+    const check = await pool.query("SELECT status FROM orders WHERE id = $1", [id]);
+    if (check.rowCount === 0) {
       return res.status(404).json({ message: "Order not found" });
     }
-    res.status(200).json({ message: "Order deleted successfully!", deletedOrderId: id });
+
+    const status = check.rows[0].status;
+    if (!["rejected"].includes(status)) {
+  return res.status(400).json({ message: "Only rejected orders can be deleted" });
+}
+
+    // delete items first, then order
+    await pool.query("DELETE FROM order_items WHERE order_id = $1", [id]);
+    await pool.query("DELETE FROM orders WHERE id = $1 RETURNING id", [id]);
+
+    res.status(200).json({ message: `Order ${id} deleted successfully!`, deletedOrderId: id });
   } catch (err) {
     console.error(`Error deleting order ID ${id}:`, err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 module.exports = router;

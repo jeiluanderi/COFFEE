@@ -16,7 +16,7 @@ const pool = new Pool({
 // GET /categories - Public route to fetch all categories
 router.get('/', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, name FROM categories ORDER BY name ASC');
+        const result = await pool.query('SELECT id, name,description,icon_name FROM categories ORDER BY name ASC');
         res.json(result.rows);
     } catch (err) {
         console.error(err);

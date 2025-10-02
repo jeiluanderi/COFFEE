@@ -47,7 +47,7 @@ const TeamMember = ({ imageUrl, name, role }) => {
     return (
         <div className="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
             {/* Internal CSS for the TeamMember card */}
-            <style jsx>{`
+            <style >{`
                 .team-item {
                     box-shadow: none; /* Removed box-shadow to make it truly transparent */
                     transition: transform 0.3s ease; /* Smooth transition for hover effect */

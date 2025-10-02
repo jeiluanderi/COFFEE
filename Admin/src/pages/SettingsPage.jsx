@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 // This is the main component for the admin settings page.
 const SettingsPage = () => {
+    // API base URL for the Node.js backend.
+    const apiBaseUrl = 'http://127.0.0.1:3001';
+
     // State to hold all the settings data.
     const [settings, setSettings] = useState({
         general: {
@@ -14,6 +17,25 @@ const SettingsPage = () => {
             pickupInstructions: '',
         },
         products: [],
+        userProfile: {
+            name: '',
+            email: '',
+            phoneNumber: '',
+        },
+        notifications: {
+            promotions: true,
+            securityAlerts: true,
+        },
+        security: {
+            is2FAEnabled: false,
+        },
+        display: {
+            theme: 'light',
+        },
+        localization: {
+            language: 'en-US',
+            timeZone: 'EST',
+        }
     });
 
     // State for the product form.
@@ -29,30 +51,86 @@ const SettingsPage = () => {
     // State for handling confirmation and alerts
     const [message, setMessage] = useState(null);
 
-    // API base URL for the Node.js backend.
-    const apiBaseUrl = 'http://127.0.0.1:3001/api/admin/settings';
+    // This is the function you need to add to handle changes in the product form.
+    const handleProductFormChange = (e) => {
+        const { name, value } = e.target;
+        setProductForm(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
 
-    // Fetch settings from the backend on component mount.
-    useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                const response = await fetch(apiBaseUrl);
-                if (!response.ok) throw new Error('Failed to fetch settings');
-                const data = await response.json();
-                setSettings(data);
-            } catch (error) {
-                console.error('Error fetching settings:', error);
-                setMessage({ type: 'error', text: 'Could not load settings. Please ensure the backend server is running.' });
+    // The function to fetch all settings from the backend.
+    const fetchSettings = async () => {
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/admin/shop_settings`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch settings');
             }
-        };
+            const data = await response.json();
+
+            // Correctly handle null values by converting them to empty strings.
+            const cleanedData = {
+                ...data,
+                userProfile: {
+                    ...data.userProfile,
+                    name: data.userProfile.name || '',
+                    email: data.userProfile.email || '',
+                    phoneNumber: data.userProfile.phoneNumber || '',
+                },
+                general: {
+                    ...data.general,
+                    storeName: data.general.storeName || '',
+                    storeDescription: data.general.storeDescription || '',
+                    businessHours: data.general.businessHours || {},
+                },
+                ecommerce: {
+                    ...data.ecommerce,
+                    pickupInstructions: data.ecommerce.pickupInstructions || '',
+                }
+                // ... you might need to add more fields here if they can be null
+            };
+
+            setSettings(cleanedData);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            setMessage({ type: 'error', text: 'Failed to fetch settings. Please try again.' });
+        }
+    };
+
+    // The function to handle saving all settings.
+    const handleSaveAllSettings = async () => {
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/admin/shop_settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    settings: settings,
+                    action: 'saveAllSettings',
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save settings');
+            }
+
+            setMessage({ type: 'success', text: 'Settings saved successfully!' });
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
+        }
+    };
+
+    // Use effect hook to fetch settings when the component mounts.
+    useEffect(() => {
         fetchSettings();
     }, []);
-
     // Handle input changes for general and e-commerce settings.
     const handleSettingsChange = (e) => {
         const { id, value, type, checked } = e.target;
         if (id in settings.general || id.endsWith('-hours')) {
-            // Handle business hours separately.
             if (id.endsWith('-hours')) {
                 const day = id.replace('-hours', '');
                 setSettings(prev => ({
@@ -82,44 +160,48 @@ const SettingsPage = () => {
         }
     };
 
-    // Handle input changes for the product form.
-    const handleProductFormChange = (e) => {
-        const { id, value } = e.target;
-        setProductForm(prev => ({ ...prev, [id]: value }));
+    // Generic handler for nested state changes (profile, notifications, etc.)
+    const handleComplexSettingsChange = (group, key, value) => {
+        setSettings(prev => ({
+            ...prev,
+            [group]: {
+                ...prev[group],
+                [key]: value,
+            }
+        }));
     };
 
     // Handle product form submission.
     const handleProductSubmit = async (e) => {
-            e.preventDefault();
-            const isEditing = !!productForm.id;
-            const action = isEditing ? 'update' : 'add';
+        e.preventDefault();
+        const isEditing = !!productForm.id;
+        const action = isEditing ? 'update' : 'add';
 
-            const product = {
-                id: isEditing ? productForm.id : Date.now().toString(),
-                name: productForm.name,
-                description: productForm.description,
-                price: parseFloat(productForm.price),
-                stock: parseInt(productForm.stock),
-                imageUrl: productForm.imageUrl,
-            };
+        const product = {
+            id: isEditing ? productForm.id : Date.now().toString(),
+            name: productForm.name,
+            description: productForm.description,
+            price: parseFloat(productForm.price),
+            stock: parseInt(productForm.stock),
+            imageUrl: productForm.imageUrl,
+        };
 
-            try {
-                const response = await fetch(apiBaseUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ products: [product], action }),
-                });
-                if (!response.ok) throw new Error('Failed to save product');
+        try {
+            const response = await fetch(apiBaseUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ products: [product], action }),
+            });
+            if (!response.ok) throw new Error('Failed to save product');
 
-                setMessage({ type: 'success', text: 'Product saved successfully!' });
-                setProductForm({ id: null, name: '', description: '', price: '', stock: '', imageUrl: '' });
-                // Re-fetch data to update the UI
-                const updatedSettings = await (await fetch(apiBaseUrl)).json();
-                setSettings(updatedSettings);
-            } catch (error) {
-                console.error('Error saving product:', error);
-                setMessage({ type: 'error', text: 'Error saving product. Check console for details.' });
-            }
+            setMessage({ type: 'success', text: 'Product saved successfully!' });
+            setProductForm({ id: null, name: '', description: '', price: '', stock: '', imageUrl: '' });
+            const updatedSettings = await (await fetch(apiBaseUrl)).json();
+            setSettings(updatedSettings);
+        } catch (error) {
+            console.error('Error saving product:', error);
+            setMessage({ type: 'error', text: 'Error saving product. Check console for details.' });
+        }
     };
 
     // Function to handle product deletion.
@@ -137,7 +219,6 @@ const SettingsPage = () => {
             if (!response.ok) throw new Error('Failed to delete product');
 
             setMessage({ type: 'success', text: 'Product deleted successfully!' });
-            // Re-fetch data to update the UI
             const updatedSettings = await (await fetch(apiBaseUrl)).json();
             setSettings(updatedSettings);
         } catch (error) {
@@ -152,257 +233,355 @@ const SettingsPage = () => {
     };
 
     // Function to save all settings.
-    const handleSaveAllSettings = async () => {
-        try {
-            const response = await fetch(apiBaseUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ settings, action: 'update' }),
-            });
-            if (!response.ok) throw new Error('Failed to save settings');
+    
 
-            setMessage({ type: 'success', text: 'All settings saved successfully!' });
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            setMessage({ type: 'error', text: 'Error saving settings. Check console for details.' });
-        }
-    };
+    // Placeholder functions for new functionalities.
+    const handlePasswordChange = () => alert('Password change functionality to be implemented on the backend.');
+    const handleAccountDeletion = () => alert('Account deletion functionality to be implemented on the backend.');
+    const handleLogoutAllDevices = () => alert('Log out all devices functionality to be implemented on the backend.');
+    const handleToggle2FA = () => handleComplexSettingsChange('security', 'is2FAEnabled', !settings.security.is2FAEnabled);
+    const handleThemeChange = () => handleComplexSettingsChange('display', 'theme', settings.display.theme === 'light' ? 'dark' : 'light');
 
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
     return (
-        <div className="container">
+        <div className={`container ${settings.display.theme}`}>
             <style>
                 {`
-                    .container {
-                        padding: 2rem ;
-                        font-family: 'Inter', sans-serif;
-                        min-height: 100vh;
-                        background-color: #f3e5d8;
+                .container {
+                    padding: 2rem;
+                    font-family: 'Inter', sans-serif;
+                    min-height: 100vh;
+                    background-color: #f3e5d8;
+                    color: #333;
+                    width: 1200px;
+                }
 
-                    }
-                    .message-box {
-                        position: fixed;
-                        top: 1rem;
-                        right: 1rem;
-                        padding: 0.75rem 1.5rem;
-                        border-radius: 0.5rem;
-                        color: white;
-                        z-index: 1000;
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                        animation: fadein 0.5s, fadeout 0.5s 2.5s;
-                    }
-                    .message-box.success {
-                        background-color: #4CAF50;
-                    }
-                    .message-box.error {
-                        background-color: #F44336;
-                    }
-                    @keyframes fadein {
-                        from { opacity: 0; }
-                        to { opacity: 1; }
-                    }
-                    @keyframes fadeout {
-                        from { opacity: 1; }
-                        to { opacity: 0; }
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 2.5rem;
-                    }
-                    .header h1 {
-                        font-size: 2.25rem;
-                        font-weight: 800;
-                        color: #4a3222;
-                    }
-                    .header p {
-                        font-size: 1.125rem;
-                        color: #4b5563;
-                        margin-top: 0.5rem;
-                        font-weight: 500;
-                    }
-                    .main-content {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 2rem;
-                         width: 90%; /* Use a percentage to allow expansion */
-    max-width: none;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    .card {
-                        background-color: white;
-                        border-radius: 1rem;
-                        padding: 1.5rem;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                        border-top: 4px solid #6c4b38;
-                    }
-                    .card h2 {
-                        font-size: 1.5rem;
-                        font-weight: bold;
-                        margin-bottom: 1rem;
-                        color: #6c4b38;
-                    }
-                    .card p {
-                        font-size: 0.875rem;
-                        color: #6b7280;
-                        margin-bottom: 1.5rem;
-                    }
-                    .form-section {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 1rem;
-                    }
-                    .form-group label {
-                        display: block;
-                        font-size: 0.875rem;
-                        font-weight: 600;
-                        color: #4b5563;
-                        margin-bottom: 0.25rem;
-                    }
-                    .input-field {
-                        border: 1px solid #d1d5db;
-                        border-radius: 0.5rem;
-                        padding: 0.5rem;
-                        width: 100%;
-                        transition: all 0.2s;
-                    }
-                    .input-field:focus {
-                        outline: none;
-                        border-color: #9c7b5a;
-                        box-shadow: 0 0 0 2px rgba(156, 123, 90, 0.5);
-                    }
+                .container.dark {
+                    background-color: #333;
+                    color: #f3e5d8;
+                }
+
+                .container.dark .card {
+                    background-color: #4b4b4b;
+                    border-top: 4px solid #f3e5d8;
+                }
+
+                .container.dark .card h2, .container.dark .product-info h3 {
+                    color: #f3e5d8;
+                }
+
+                .container.dark .input-field {
+                    background-color: #616161;
+                    color: #f3e5d8;
+                    border-color: #555;
+                }
+                
+                .container.dark .input-field:focus {
+                    border-color: #9c7b5a;
+                    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+                }
+
+                .container.dark .product-item {
+                    background-color: #555;
+                }
+
+                .container.dark .product-info p, .container.dark .product-info .details {
+                    color: #d1d1d1;
+                }
+
+                .message-box {
+                    position: fixed;
+                    top: 1rem;
+                    right: 1rem;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 0.5rem;
+                    color: white;
+                    z-index: 1000;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                }
+
+                .message-box.success {
+                    background-color: #4CAF50;
+                }
+
+                .message-box.error {
+                    background-color: #F44336;
+                }
+
+                @keyframes fadein {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                @keyframes fadeout {
+                    from { opacity: 1; }
+                    to  { opacity: 0; }
+                }
+
+                .header {
+                    text-align: center;
+                    margin-bottom: 2.5rem;
+                    max-width: 1200px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                .header h1 {
+                    font-size: 2.25rem;
+                    font-weight: 800;
+                    color: inherit;
+                }
+
+                .header p {
+                    font-size: 1.125rem;
+                    color: inherit;
+                    margin-top: 0.5rem;
+                    font-weight: 500;
+                }
+
+                .main-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2rem;
+                    max-width: 1200px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                .card {
+                    background-color: white;
+                    border-radius: 1rem;
+                    padding: 1.5rem;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border-top: 4px solid #6c4b38;
+                }
+
+                .card h2 {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    margin-bottom: 1rem;
+                    color: inherit;
+                }
+
+                .card p {
+                    font-size: 0.875rem;
+                    color: inherit;
+                    margin-bottom: 1.5rem;
+                }
+
+                .form-section {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+                
+                .form-group label {
+                    display: block;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    color: inherit;
+                    margin-bottom: 0.25rem;
+                }
+
+                .input-field {
+                    border: 1px solid #d1d5db;
+                    border-radius: 0.5rem;
+                    padding: 0.5rem;
+                    width: 100%;
+                    transition: all 0.2s;
+                }
+
+                .input-field:focus {
+                    outline: none;
+                    border-color: #9c7b5a;
+                    box-shadow: 0 0 0 2px rgba(156, 123, 90, 0.5);
+                }
+
+                .grid-2 {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                }
+
+                @media (min-width: 640px) {
                     .grid-2 {
-                        display: grid;
-                        grid-template-columns: 1fr;
-                        gap: 1rem;
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
                     }
-                    @media (min-width: 640px) {
-                        .grid-2 {
-                            grid-template-columns: repeat(2, minmax(0, 1fr));
-                        }
-                    }
-                    .button {
-                        padding: 0.75rem 1rem;
-                        border-radius: 0.5rem;
-                        font-weight: 500;
-                        transition: background-color 0.2s;
-                    }
-                    .button.primary {
-                        background-color: #4a3222;
-                        color: white;
-                    }
-                    .button.primary:hover {
-                        background-color: #6c4b38;
-                    }
-                    .button.secondary {
-                        background-color: #e5e7eb;
-                        color: #4b5563;
-                    }
-                    .button.secondary:hover {
-                        background-color: #d1d5db;
-                    }
-                    .button.edit {
-                        background-color: #c2a27d;
-                        color: white;
-                        padding: 0.25rem 0.75rem;
-                        font-size: 0.875rem;
-                    }
-                    .button.edit:hover {
-                        background-color: #a58968;
-                    }
-                    .button.delete {
-                        background-color: #ef4444;
-                        color: white;
-                        padding: 0.25rem 0.75rem;
-                        font-size: 0.875rem;
-                    }
-                    .button.delete:hover {
-                        background-color: #dc2626;
-                    }
+                }
+                
+                .button {
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.5rem;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                    cursor: pointer;
+                    border: none;
+                }
+
+                .button.primary {
+                    background-color: #4a3222;
+                    color: white;
+                }
+
+                .button.primary:hover {
+                    background-color: #6c4b38;
+                }
+
+                .button.secondary {
+                    background-color: #e5e7eb;
+                    color: #4b5563;
+                }
+
+                .button.secondary:hover {
+                    background-color: #d1d5db;
+                }
+
+                .button.edit {
+                    background-color: #c2a27d;
+                    color: white;
+                    padding: 0.25rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+
+                .button.edit:hover {
+                    background-color: #a58968;
+                }
+
+                .button.delete {
+                    background-color: #ef4444;
+                    color: white;
+                    padding: 0.25rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+
+                .button.delete:hover {
+                    background-color: #dc2626;
+                }
+
+                .product-item {
+                    background-color: #fff9f4;
+                    border-radius: 0.5rem;
+                    padding: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1rem;
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                }
+
+                @media (min-width: 640px) {
                     .product-item {
-                        background-color: #fff9f4;
-                        border-radius: 0.5rem;
-                        padding: 1rem;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 1rem;
-                        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                        flex-direction: row;
+                        justify-content: space-between;
+                        text-align: left;
                     }
-                    @media (min-width: 640px) {
-                        .product-item {
-                            flex-direction: row;
-                            justify-content: space-between;
-                            text-align: left;
-                        }
-                    }
-                    .product-image {
-                        flex-shrink: 0;
-                        width: 6rem;
-                        height: 6rem;
-                        overflow: hidden;
-                        border-radius: 0.375rem;
-                        border: 1px solid #9c7b5a;
-                        object-fit: cover;
-                    }
+                }
+
+                .product-image {
+                    flex-shrink: 0;
+                    width: 6rem;
+                    height: 6rem;
+                    overflow: hidden;
+                    border-radius: 0.375rem;
+                    border: 1px solid #9c7b5a;
+                    object-fit: cover;
+                }
+                
+                .product-info {
+                    flex: 1;
+                    text-align: center;
+                }
+
+                @media (min-width: 640px) {
                     .product-info {
-                        flex: 1;
-                        text-align: center;
+                        text-align: left;
                     }
-                    @media (min-width: 640px) {
-                        .product-info {
-                            text-align: left;
-                        }
-                    }
-                    .product-info h3 {
-                        font-size: 1.125rem;
-                        font-weight: bold;
-                        color: #4a3222;
-                    }
-                    .product-info p {
-                        font-size: 0.875rem;
-                        color: #6b7280;
-                        margin-top: 0.25rem;
-                    }
-                    .product-info .details {
-                        font-weight: 600;
-                        color: #6c4b38;
-                        margin-top: 0.25rem;
-                    }
-                    .product-actions {
-                        flex-shrink: 0;
-                        display: flex;
-                        gap: 0.5rem;
-                        justify-content: center;
-                    }
-                    .save-button-container {
-                        text-align: center;
-                        margin-top: 2rem;
-                    }
-                    .save-button {
-                        background-color: #9c7b5a;
-                        color: white;
-                        font-weight: bold;
-                        padding: 0.75rem 2rem;
-                        border-radius: 0.5rem;
-                        font-size: 1.125rem;
-                        transition: background-color 0.2s;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                    }
-                    .save-button:hover {
-                        background-color: #8d6c4e;
-                    }
-                    .empty-list {
-                        color: #6b7280;
-                        text-align: center;
-                        padding-top: 1rem;
-                        padding-bottom: 1rem;
-                        font-style: italic;
-                    }
+                }
+                
+                .product-info h3 {
+                    font-size: 1.125rem;
+                    font-weight: bold;
+                    color: inherit;
+                }
+                
+                .product-info p {
+                    font-size: 0.875rem;
+                    color: inherit;
+                    margin-top: 0.25rem;
+                }
+                
+                .product-info .details {
+                    font-weight: 600;
+                    color: #6c4b38;
+                    margin-top: 0.25rem;
+                }
+
+                .product-actions {
+                    flex-shrink: 0;
+                    display: flex;
+                    gap: 0.5rem;
+                    justify-content: center;
+                }
+
+                .save-button-container {
+                    text-align: center;
+                    margin-top: 2rem;
+                }
+
+                .save-button {
+                    background-color: #9c7b5a;
+                    color: white;
+                    font-weight: bold;
+                    padding: 0.75rem 2rem;
+                    border-radius: 0.5rem;
+                    font-size: 1.125rem;
+                    transition: background-color 0.2s;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    cursor: pointer;
+                    border: none;
+                }
+
+                .save-button:hover {
+                    background-color: #8d6c4e;
+                }
+                
+                .empty-list {
+                    color: inherit;
+                    text-align: center;
+                    padding-top: 1rem;
+                    padding-bottom: 1rem;
+                    font-style: italic;
+                }
+
+                .checkbox-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .checkbox-group input[type="checkbox"] {
+                    height: 1.25rem;
+                    width: 1.25rem;
+                }
+                
+                .danger-zone button {
+                    background-color: #dc2626;
+                    color: white;
+                }
+                
+                .danger-zone button:hover {
+                    background-color: #ef4444;
+                }
+                
+                .button-group {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
                 `}
             </style>
-            
             {message && (
                 <div className={`message-box ${message.type}`}>
                     {message.text}
@@ -415,6 +594,49 @@ const SettingsPage = () => {
             </header>
 
             <main className="main-content">
+                {/* User Profile Settings Card */}
+                <section id="user-profile-settings" className="card">
+                    <h2>Your Profile 👤</h2>
+                    <p>Manage your personal information and account details.</p>
+                    <div className="form-section">
+                        <div className="form-group">
+                            <label htmlFor="name">Full Name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                value={settings.userProfile.name}
+                                onChange={e => handleComplexSettingsChange('userProfile', 'name', e.target.value)}
+                                className="input-field"
+                                placeholder="Your Name"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="email">Email Address</label>
+                            <input
+                                type="email"
+                                id="email"
+                                value={settings.userProfile.email}
+                                onChange={e => handleComplexSettingsChange('userProfile', 'email', e.target.value)}
+                                className="input-field"
+                                placeholder="name@example.com"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="phoneNumber">Phone Number</label>
+                            <input
+                                type="tel"
+                                id="phoneNumber"
+                                value={settings.userProfile.phoneNumber}
+                                onChange={e => handleComplexSettingsChange('userProfile', 'phoneNumber', e.target.value)}
+                                className="input-field"
+                                placeholder="555-555-5555"
+                            />
+                        </div>
+                    </div>
+                </section>
+                
+                <hr />
+
                 {/* General Store Settings Card */}
                 <section id="general-settings" className="card">
                     <h2>General Store Settings ⚙️</h2>
@@ -443,7 +665,7 @@ const SettingsPage = () => {
                             ></textarea>
                         </div>
                         <div className="form-group">
-                            <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#4b5563', marginBottom: '0.5rem' }}>Business Hours ⏰</h3>
+                            <h3>Business Hours ⏰</h3>
                             <div className="grid-2">
                                 {daysOfWeek.map(day => (
                                     <div key={day}>
@@ -463,7 +685,7 @@ const SettingsPage = () => {
                     </div>
                 </section>
 
-                <hr style={{ border: 'none', height: '1px', backgroundColor: '#d1d5db', margin: '2rem 0' }} />
+                <hr />
 
                 {/* Product Management Card */}
                 <section id="product-management" className="card">
@@ -533,7 +755,7 @@ const SettingsPage = () => {
                                     required
                                 />
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <div className="actions-bar button-group">
                                 <button
                                     type="submit"
                                     className="button primary"
@@ -552,8 +774,8 @@ const SettingsPage = () => {
                             </div>
                         </form>
 
-                        <div id="product-list" style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#6c4b38' }}>Current Products</h3>
+                        <div id="product-list" className="product-list">
+                            <h3>Current Products</h3>
                             {settings.products.length === 0 ? (
                                 <p className="empty-list">No products added yet. Add your first coffee product above! ☕</p>
                             ) : (
@@ -591,22 +813,21 @@ const SettingsPage = () => {
                     </div>
                 </section>
 
-                <hr style={{ border: 'none', height: '1px', backgroundColor: '#d1d5db', margin: '2rem 0' }} />
+                <hr />
 
                 {/* E-commerce and Ordering Settings Card */}
                 <section id="ecommerce-settings" className="card">
                     <h2>Online Ordering Settings 🛒</h2>
                     <p>Configure options for online orders and customer pickup.</p>
                     <div className="form-section">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className="checkbox-group">
                             <input
                                 type="checkbox"
                                 id="onlineOrdering"
                                 checked={settings.ecommerce.onlineOrdering}
                                 onChange={e => handleSettingsChange({ target: { id: 'onlineOrdering', type: 'checkbox', checked: e.target.checked } })}
-                                style={{ height: '1.25rem', width: '1.25rem', color: '#9c7b5a', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
                             />
-                            <label htmlFor="onlineOrdering" style={{ fontSize: '0.875rem', fontWeight: '600', color: '#4b5563' }}>Enable Online Ordering</label>
+                            <label htmlFor="onlineOrdering">Enable Online Ordering</label>
                         </div>
                         <div className="form-group">
                             <label htmlFor="pickupInstructions">Pickup Instructions</label>
@@ -621,8 +842,84 @@ const SettingsPage = () => {
                         </div>
                     </div>
                 </section>
+                
+                <hr />
 
-                <hr style={{ border: 'none', height: '1px', backgroundColor: '#d1d5db', margin: '2rem 0' }} />
+                {/* Display & Localization Settings */}
+                <section id="display-localization-settings" className="card">
+                    <h2>Display & Localization 🎨</h2>
+                    <p>Customize the look and feel of your admin dashboard.</p>
+                    <div className="form-section">
+                        <div className="form-group">
+                            <label>Theme</label>
+                            <div className="button-group">
+                                <button 
+                                    onClick={handleThemeChange} 
+                                    className="button secondary"
+                                >
+                                    {settings.display.theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="language">Language</label>
+                            <select
+                                id="language"
+                                value={settings.localization.language}
+                                onChange={e => handleComplexSettingsChange('localization', 'language', e.target.value)}
+                                className="input-field"
+                            >
+                                <option value="en-US">English (US)</option>
+                                <option value="es-ES">Spanish</option>
+                                <option value="fr-FR">French</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="timeZone">Time Zone</label>
+                            <select
+                                id="timeZone"
+                                value={settings.localization.timeZone}
+                                onChange={e => handleComplexSettingsChange('localization', 'timeZone', e.target.value)}
+                                className="input-field"
+                            >
+                                <option value="EST">Eastern Standard Time</option>
+                                <option value="PST">Pacific Standard Time</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <hr />
+
+                {/* Privacy & Security Settings */}
+                <section id="privacy-security-settings" className="card">
+                    <h2>Privacy & Security 🔒</h2>
+                    <p>Manage your account security and privacy settings.</p>
+                    <div className="form-section">
+                        <div className="form-group">
+                            <label>Password</label>
+                            <button onClick={handlePasswordChange} className="button primary">Change Password</button>
+                        </div>
+                        <div className="checkbox-group">
+                            <input
+                                type="checkbox"
+                                id="2fa-toggle"
+                                checked={settings.security.is2FAEnabled}
+                                onChange={handleToggle2FA}
+                            />
+                            <label htmlFor="2fa-toggle">Enable Two-Factor Authentication</label>
+                        </div>
+                        <div className="form-group danger-zone">
+                            <label>Danger Zone</label>
+                            <div className="button-group">
+                                <button onClick={handleLogoutAllDevices} className="button primary">Log Out All Devices</button>
+                                <button onClick={handleAccountDeletion} className="button primary delete">Delete Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr />
 
                 <div className="save-button-container">
                     <button

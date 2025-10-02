@@ -88,7 +88,7 @@ const LocationsSection = () => {
     return (
         <div className="container-xxl py-5">
             {/* Internal CSS for consistent card height and image fitting */}
-            <style jsx>{`
+            <style >{`
                 .location-item {
                     box-shadow: 0 0 45px rgba(0,0,0,.08);
                     transition: transform 0.3s ease-in-out;

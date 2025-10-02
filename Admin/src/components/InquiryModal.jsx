@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 // This is the StatusBadge component, but if it's used elsewhere,
 // it should also be in its own file and imported here.

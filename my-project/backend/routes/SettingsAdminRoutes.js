@@ -1,164 +1,140 @@
+// settingsAdminRoutes.js
+
 const express = require('express');
 const router = express.Router();
-const { Pool } = require('pg');
+// No need to require pg or initialize a new pool here.
 
-// This module exports a function that accepts the PostgreSQL pool instance.
-// This is the correct way to share the database connection with the router.
 module.exports = (pool) => {
-    // Helper function to fetch the single settings record from the database.
-    // It handles the case where no record exists by returning a default structure.
-    const getSettingsFromDb = async (client) => {
-        const query = 'SELECT general_data, ecommerce_data, products_data FROM settings WHERE id = 1';
-        const result = await client.query(query);
-        if (result.rows.length > 0) {
-            return result.rows[0];
-        }
-        // If no settings exist, return a default structure for initialization.
-        // In a real application, you might create a new record here.
-        return {
-            general_data: {},
-            ecommerce_data: {},
-            products_data: []
-        };
-    };
+    router.route('/') // This is the correct base path for the router
+        .get(async (req, res) => {
+            try {
+                // Fetch general settings from the 'shop_settings' table
+                const result = await pool.query('SELECT * FROM shop_settings WHERE id = 1');
+                const settingsData = result.rows[0] || {};
 
-    /**
-     * @route  GET /
-     * @desc   Get all admin settings.
-     * @access Public
-     *
-     * This route fetches all settings data from the database and returns it
-     * in a structured JSON format for the frontend.
-     */
-    router.get('/', async (req, res) => {
-        let client;
-        try {
-            client = await pool.connect();
-            const settings = await getSettingsFromDb(client);
-            // Re-structure the data to match the frontend's expected format.
-            const formattedSettings = {
-                general: settings.general_data,
-                ecommerce: settings.ecommerce_data,
-                products: settings.products_data
-            };
-            res.status(200).json(formattedSettings);
-        } catch (error) {
-            console.error('Error fetching settings:', error.stack);
-            res.status(500).json({ error: 'Failed to fetch settings' });
-        } finally {
-            if (client) client.release();
-        }
-    });
+                // Fetch product list from the 'products' table
+                const productResult = await pool.query('SELECT * FROM products ORDER BY id ASC');
+                const productsRows = productResult.rows;
 
-    /**
-     * @route  PUT /
-     * @desc   Update general and ecommerce settings.
-     * @access Public (in this example)
-     *
-     * This route handles updating the general and ecommerce settings.
-     * It merges the incoming data with the existing settings to ensure no data is lost.
-     */
-    router.put('/', async (req, res) => {
-        const { general, ecommerce } = req.body;
-        let client;
-        try {
-            client = await pool.connect();
-            const currentSettings = await getSettingsFromDb(client);
+                // Format data to match the frontend state structure
+                const responseData = {
+                    general: {
+                        storeName: settingsData.store_name,
+                        storeDescription: settingsData.store_description,
+                        businessHours: settingsData.business_hours || {},
+                    },
+                    ecommerce: {
+                        onlineOrdering: settingsData.online_ordering,
+                        pickupInstructions: settingsData.pickup_instructions,
+                    },
+                    userProfile: {
+                        name: settingsData.user_profile_name,
+                        email: settingsData.user_profile_email,
+                        phoneNumber: settingsData.user_profile_phone_number,
+                    },
+                    notifications: {
+                        promotions: settingsData.promotions_enabled,
+                        securityAlerts: settingsData.security_alerts_enabled,
+                    },
+                    security: {
+                        is2FAEnabled: settingsData.is_2fa_enabled,
+                    },
+                    display: {
+                        theme: settingsData.theme,
+                    },
+                    localization: {
+                        language: settingsData.language,
+                        timeZone: settingsData.time_zone,
+                    },
+                    products: productsRows
+                };
 
-            const updatedGeneral = { ...currentSettings.general_data, ...general };
-            const updatedEcommerce = { ...currentSettings.ecommerce_data, ...ecommerce };
+                res.status(200).json(responseData);
+            } catch (error) {
+                console.error('Error fetching settings:', error);
+                res.status(500).send('Failed to fetch settings');
+            }
+        })
+        .post(async (req, res) => {
+            const { settings, products, action } = req.body;
+            
+            try {
+                switch (action) {
+                    case 'saveAllSettings':
+                        if (settings) {
+                            const { general, ecommerce, userProfile, notifications, security, display, localization } = settings;
+                            const sql = `UPDATE shop_settings SET
+                                store_name = $1,
+                                store_description = $2,
+                                business_hours = $3,
+                                online_ordering = $4,
+                                pickup_instructions = $5,
+                                user_profile_name = $6,
+                                user_profile_email = $7,
+                                user_profile_phone_number = $8,
+                                promotions_enabled = $9,
+                                security_alerts_enabled = $10,
+                                is_2fa_enabled = $11,
+                                theme = $12,
+                                language = $13,
+                                time_zone = $14
+                                WHERE id = 1`;
+                            
+                            const values = [
+                                general.storeName,
+                                general.storeDescription,
+                                general.businessHours,
+                                ecommerce.onlineOrdering,
+                                ecommerce.pickupInstructions,
+                                userProfile.name,
+                                userProfile.email,
+                                userProfile.phoneNumber,
+                                notifications.promotions,
+                                notifications.securityAlerts,
+                                security.is2FAEnabled,
+                                display.theme,
+                                localization.language,
+                                localization.timeZone
+                            ];
 
-            const query = 'UPDATE settings SET general_data = $1, ecommerce_data = $2 WHERE id = 1';
-            await client.query(query, [updatedGeneral, updatedEcommerce]);
-
-            res.status(200).json({ message: 'Settings updated successfully.' });
-        } catch (error) {
-            console.error('Error updating settings:', error.stack);
-            res.status(500).json({ error: 'Failed to update settings.' });
-        } finally {
-            if (client) client.release();
-        }
-    });
-
-    /**
-     * @route  POST /products
-     * @desc   Add a new product.
-     * @access Public (in this example)
-     *
-     * This route adds a new product to the `products_data` array.
-     */
-    router.post('/products', async (req, res) => {
-        const { product } = req.body;
-        let client;
-        try {
-            client = await pool.connect();
-            const currentSettings = await getSettingsFromDb(client);
-            const updatedProducts = [...currentSettings.products_data, product];
-            const query = 'UPDATE settings SET products_data = $1 WHERE id = 1';
-            await client.query(query, [updatedProducts]);
-            res.status(201).json({ message: 'Product added successfully.' });
-        } catch (error) {
-            console.error('Error adding product:', error.stack);
-            res.status(500).json({ error: 'Failed to add product.' });
-        } finally {
-            if (client) client.release();
-        }
-    });
-
-    /**
-     * @route  PUT /products/:id
-     * @desc   Update an existing product.
-     * @access Public (in this example)
-     *
-     * This route updates a single product within the `products_data` array based on its ID.
-     */
-    router.put('/products/:id', async (req, res) => {
-        const { id } = req.params;
-        const updatedProduct = req.body.product;
-        let client;
-        try {
-            client = await pool.connect();
-            const currentSettings = await getSettingsFromDb(client);
-            const productList = currentSettings.products_data.map(p =>
-                p.id === id ? updatedProduct : p
-            );
-
-            const query = 'UPDATE settings SET products_data = $1 WHERE id = 1';
-            await client.query(query, [productList]);
-            res.status(200).json({ message: 'Product updated successfully.' });
-        } catch (error) {
-            console.error('Error updating product:', error.stack);
-            res.status(500).json({ error: 'Failed to update product.' });
-        } finally {
-            if (client) client.release();
-        }
-    });
-
-    /**
-     * @route  DELETE /products/:id
-     * @desc   Delete a product.
-     * @access Public (in this example)
-     *
-     * This route deletes a product from the `products_data` array based on its ID.
-     */
-    router.delete('/products/:id', async (req, res) => {
-        const { id } = req.params;
-        let client;
-        try {
-            client = await pool.connect();
-            const currentSettings = await getSettingsFromDb(client);
-            const updatedProducts = currentSettings.products_data.filter(p => p.id !== id);
-
-            const query = 'UPDATE settings SET products_data = $1 WHERE id = 1';
-            await client.query(query, [updatedProducts]);
-            res.status(200).json({ message: 'Product deleted successfully.' });
-        } catch (error) {
-            console.error('Error deleting product:', error.stack);
-            res.status(500).json({ error: 'Failed to delete product.' });
-        } finally {
-            if (client) client.release();
-        }
-    });
-
+                            await pool.query(sql, values);
+                            return res.status(200).send('All settings updated successfully');
+                        }
+                        break;
+                    case 'add':
+                        if (products && products.length > 0) {
+                            const { name, description, price, stock, imageUrl } = products[0];
+                            const sql = 'INSERT INTO products (name, description, price, stock, image_url) VALUES ($1, $2, $3, $4, $5)';
+                            const values = [name, description, price, stock, imageUrl];
+                            await pool.query(sql, values);
+                            return res.status(200).send('Product added successfully');
+                        }
+                        break;
+                    case 'update':
+                        if (products && products.length > 0) {
+                            const { id, name, description, price, stock, imageUrl } = products[0];
+                            const sql = 'UPDATE products SET name = $1, description = $2, price = $3, stock = $4, image_url = $5 WHERE id = $6';
+                            const values = [name, description, price, stock, imageUrl, id];
+                            await pool.query(sql, values);
+                            return res.status(200).send('Product updated successfully');
+                        }
+                        break;
+                    case 'delete':
+                        if (products && products.length > 0) {
+                            const { id } = products[0];
+                            const sql = 'DELETE FROM products WHERE id = $1';
+                            const values = [id];
+                            await pool.query(sql, values);
+                            return res.status(200).send('Product deleted successfully');
+                        }
+                        break;
+                    default:
+                        return res.status(400).send('Invalid action specified');
+                }
+            } catch (error) {
+                console.error('Error processing request:', error);
+                res.status(500).send('Failed to process request');
+            }
+        });
     return router;
 };

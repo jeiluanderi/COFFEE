@@ -57,7 +57,7 @@ const EventsSection = () => {
     return (
         <div className="container-fluid py-5">
             {/* Internal CSS for the event cards hover effect */}
-            <style jsx>{`
+            <style >{`
                 .event-card-item {
                     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Added background-color to transition */
                     cursor: pointer; /* Indicates it's interactive */

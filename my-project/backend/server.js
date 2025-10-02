@@ -1,5 +1,3 @@
-// src/backend/server.js
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -60,27 +58,37 @@ app.use(
 // --- Middleware ---
 app.use(express.json());
 
-// --- Routes ---
-// Group all Admin routes together
-app.use('/api/admin/inquiries', require('./routes/adminInquiriesRoutes')); 
+// --- Admin Routes (need pool) ---
+
+app.use('/api/admin/shop_settings', require('./routes/SettingsAdminRoutes.js')(pool));
+// app.use('/api/admin/page_metadata', require('./routes/pageHeaderAdminRoutes.js'));
+// Public route
+app.use('/api/page-settings', require('./routes/publicPageSettings.js'));
+
+// Admin route
+app.use('/api/admin/page-settings', require('./routes/adminPageSettings.js'));
+
+// --- Other Admin Routes (export plain routers) ---
+app.use('/api/admin/inquiries', require('./routes/adminInquiriesRoutes'));
 app.use('/api/admin/coffees', require('./routes/coffeeAdminRoutes'));
-app.use('/api/categories/admin', require('./routes/categoryAdminRoutes')); 
+app.use('/api/categories/admin', require('./routes/categoryAdminRoutes'));
 app.use('/api/admin/users', require('./routes/userAdminRoutes'));
 app.use('/api/admin/baristas', require('./routes/baristaAdminRoutes.js'));
 app.use('/api/admin/blogs', require('./routes/blogAdminRoutes'));
-app.use('/api/analytics', require('./routes/analyticsRoutes')); 
+app.use('/api/admin/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/admin/testimonials', require('./routes/testimonialAdminRoutes'));
 app.use('/api/admin', require('./routes/factsAdminRoutes'));
-app.use('/api/services', require('./routes/serviceAdminRoutes'));
+app.use('/api/admin/services', require('./routes/serviceAdminRoutes'));
 app.use('/api/admin/hero-slides', require('./routes/hero-slidesAdminRoutes.js'));
-app.use('/api/admin/Settings',require('./routes/SettingsAdminRoutes.js'))
-// Add all public routes
+
+// --- Public Routes (some need pool, some don’t) ---
+// app.use('/api', require('./routes/pageHeaderPublicRoutes.js')(pool));
 app.use('/api/hero-slides', require('./routes/hero-slidesRoutes.js'));
 app.use('/api', require('./routes/authRoutes'));
 app.use('/api/coffees', require('./routes/coffeeRoutes'));
-app.use('/api/categories', require('./routes/categoryRoutes')); 
+app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/inquiries', require('./routes/inquiryRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes')); // 👈 Use your original order route
+app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api', require('./routes/publicroutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/blogs', require('./routes/blogRoutes'));

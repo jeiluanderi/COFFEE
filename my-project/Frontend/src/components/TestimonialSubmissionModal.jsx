@@ -99,7 +99,7 @@ const TestimonialSubmissionModal = ({ isOpen, onClose, onSubmitted }) => {
             </div>
 
             {/* Internal CSS for the modal */}
-            <style jsx>{`
+            <style >{`
                 .modal-overlay {
                     position: fixed;
                     top: 0;

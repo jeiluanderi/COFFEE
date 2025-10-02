@@ -2,7 +2,6 @@ import React, { useState, useEffect, Component } from 'react';
 import { Plus, ArrowUp, CheckCircle, Search } from 'lucide-react';
 import axios from 'axios';
 import '../../src/DashboardPage.css';
-// import CreateOrderModal from '../components/CreateOrderModal'; // Remove this import
 
 // Component to display dynamic header message and current date
 const Header = () => {
@@ -43,8 +42,7 @@ const Header = () => {
     );
 };
 
-// Summary Cards Component - adapted for Admin View
-// The `onNewOrderClick` prop is no longer needed
+// --- Summary Cards Component ---
 const SummaryCards = () => {
     const [summaryData, setSummaryData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +62,8 @@ const SummaryCards = () => {
                 return;
             }
             try {
-                const response = await axios.get(`${backendUrl}/api/analytics/summary`, { headers: getAuthHeaders() });
+                // FIX: Corrected API path to match server registration
+                const response = await axios.get(`${backendUrl}/api/admin/analytics/summary`, { headers: getAuthHeaders() });
                 setSummaryData(response.data);
             } catch (error) {
                 console.error("Error fetching summary data:", error.response?.data || error.message);
@@ -84,7 +83,11 @@ const SummaryCards = () => {
         return <div className="summary-grid"><div className="card error-card">Failed to load summary data.</div></div>;
     }
 
-    const { total_sales, total_orders, total_users, total_coffees } = summaryData;
+    // Default to 0 if data fields are missing
+    const total_sales = summaryData.total_sales || 0;
+    const total_orders = summaryData.total_orders || 0;
+    const total_users = summaryData.total_users || 0;
+    // total_coffees is not used in the UI, removed from destructuring
 
     return (
         <div className="summary-grid">
@@ -93,7 +96,7 @@ const SummaryCards = () => {
                     <span className="summary-card-title">Total Sales</span>
                     <div className="icon-circle yellow"><CheckCircle size={20} color="white" /></div>
                 </div>
-                <div className="summary-value">${total_sales ? total_sales.toFixed(2) : '0.00'}</div>
+                <div className="summary-value">${total_sales.toFixed(2)}</div>
                 <span className="summary-subtitle">Total revenue from completed orders</span>
             </div>
             <div className="card summary-card">
@@ -101,10 +104,10 @@ const SummaryCards = () => {
                     <span className="summary-card-title">Total Orders</span>
                     <div className="icon-circle brown"><ArrowUp size={20} color="white" /></div>
                 </div>
-                <div className="summary-value">{total_orders || 0}</div>
+                <div className="summary-value">{total_orders}</div>
                 <span className="summary-subtitle subtitle-with-icon">
                     <ArrowUp size={16} color="#4a5568" />
-                    {total_orders || 0} all-time orders
+                    {total_orders} all-time orders
                 </span>
             </div>
             <div className="card summary-card">
@@ -112,18 +115,17 @@ const SummaryCards = () => {
                     <span className="summary-card-title">Total Users</span>
                     <div className="icon-circle brown-darker"><ArrowUp size={20} color="white" /></div>
                 </div>
-                <div className="summary-value">{total_users || 0}</div>
+                <div className="summary-value">{total_users}</div>
                 <span className="summary-subtitle subtitle-with-icon">
                     <ArrowUp size={16} color="#4a5568" />
-                    {total_users || 0} registered users
+                    {total_users} registered users
                 </span>
             </div>
-            {/* The button for creating a new order is now removed */}
         </div>
     );
 };
 
-// OrderList Component - The `onNewOrderClick` prop is no longer needed
+// --- OrderList Component ---
 const OrderList = ({ orders, isLoading, searchTerm, setSearchTerm }) => {
     const filteredOrders = orders.filter(order =>
         (order.id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,7 +148,6 @@ const OrderList = ({ orders, isLoading, searchTerm, setSearchTerm }) => {
                         className="search-input"
                     />
                 </div>
-                {/* The "Add Order" button is removed */}
             </div>
             <ul className="item-list">
                 {filteredOrders.length > 0 ? (
@@ -155,7 +156,8 @@ const OrderList = ({ orders, isLoading, searchTerm, setSearchTerm }) => {
                             <div className="item-info">
                                 <div className="item-id-badge">{order.id}</div>
                                 <div className="item-details">
-                                    <h4>{order.customerName}</h4>
+                                    {/* Assuming customerName is a property on the order object */}
+                                    <h4>{order.customerName || `Order #${order.id}`}</h4>
                                     <span>{order.items?.length || 0} items</span>
                                 </div>
                             </div>
@@ -172,7 +174,7 @@ const OrderList = ({ orders, isLoading, searchTerm, setSearchTerm }) => {
     );
 };
 
-// SideCards Component - Admin View
+// --- SideCards Component - Admin View ---
 const SideCards = () => {
     const [popularCoffees, setPopularCoffees] = useState([]);
     const [outOfStock, setOutOfStock] = useState([]);
@@ -194,17 +196,19 @@ const SideCards = () => {
                 return;
             }
             try {
-                const popularResponse = await axios.get(`${backendUrl}/api/analytics/bar-data`, { headers: getAuthHeaders() });
-                const popularData = popularResponse.data.map(item => ({
+                // FIX: Corrected API path for popular coffees (was causing 404)
+                const popularResponse = await axios.get(`${backendUrl}/api/admin/analytics/bar-data`, { headers: getAuthHeaders() });
+                const popularData = Array.isArray(popularResponse.data) ? popularResponse.data.map(item => ({
                     id: item.coffee_id,
                     name: item.product_name,
                     orders: parseInt(item.total_quantity_sold, 10),
-                    image: `https://placehold.co/40x40/F8F5EB/6F4E37?text=${item.product_name.charAt(0).toUpperCase()}`
-                }));
+                    image: `https://placehold.co/40x40/F8F5EB/6F4E37?text=${item.product_name?.charAt(0).toUpperCase() || '?'}`
+                })) : [];
                 setPopularCoffees(popularData);
 
+                // This endpoint seems correct for a public API route to get all coffees for stock check
                 const allCoffeesResponse = await axios.get(`${backendUrl}/api/coffees`, { headers: getAuthHeaders() });
-                const allCoffees = allCoffeesResponse.data;
+                const allCoffees = Array.isArray(allCoffeesResponse.data) ? allCoffeesResponse.data : [];
                 const outOfStockItems = allCoffees.filter(coffee => coffee.stock_quantity <= 5);
                 setOutOfStock(outOfStockItems.map(item => ({
                     id: item.id,
@@ -226,8 +230,8 @@ const SideCards = () => {
     if (isLoading) {
         return (
             <div className="side-cards">
-                <div className="card loading-card"><div className="spinner"></div><p>Loading...</p></div>
-                <div className="card low-stock-card loading-card"><div className="spinner"></div><p>Loading...</p></div>
+                <div className="card loading-card"><div className="spinner"></div><p>Loading popular coffees...</p></div>
+                <div className="card low-stock-card loading-card"><div className="spinner"></div><p>Checking stock...</p></div>
             </div>
         );
     }
@@ -283,7 +287,7 @@ const SideCards = () => {
     );
 };
 
-// Placeholder for AnalyticsLineChartCard
+// --- Placeholder for AnalyticsLineChartCard (Fixed API Path) ---
 const AnalyticsLineChartCard = () => {
     const [timeframe, setTimeframe] = useState('weekly');
     const [chartData, setChartData] = useState([]);
@@ -304,7 +308,8 @@ const AnalyticsLineChartCard = () => {
                 return;
             }
             try {
-                const response = await axios.get(`${backendUrl}/api/analytics/sales?timeframe=${timeframe}`, { headers: getAuthHeaders() });
+                // FIX: Corrected API path to match server registration
+                const response = await axios.get(`${backendUrl}/api/admin/analytics/sales?timeframe=${timeframe}`, { headers: getAuthHeaders() });
                 setChartData(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error("Error fetching line chart data:", error.response?.data || error.message);
@@ -329,7 +334,8 @@ const AnalyticsLineChartCard = () => {
             {isLoading ? (
                 <div className="loading-state"><div className="spinner"></div><p>Loading chart data...</p></div>
             ) : chartData.length > 0 ? (
-                <p className="chart-placeholder">Chart component for sales data here...</p>
+                // NOTE: Actual chart component (e.g., from Recharts) must replace this placeholder
+                <p className="chart-placeholder">Chart component for sales data here. Data points fetched: {chartData.length}</p>
             ) : (
                 <p className="chart-placeholder">No data available for {timeframe} timeframe.</p>
             )}
@@ -337,9 +343,9 @@ const AnalyticsLineChartCard = () => {
     );
 };
 
-// Placeholder for AnalyticsBarCharts
+// --- Placeholder for AnalyticsBarCharts (Fixed API Path) ---
 const AnalyticsBarCharts = () => {
-    const [timeframe, setTimeframe] = useState('weekly');
+    const [timeframe, setTimeframe] = useState('weekly'); // Timeframe state is defined but not used in the fetch for bar-data below, consider if it's needed
     const [chartData, setChartData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const backendUrl = 'http://localhost:3001';
@@ -358,23 +364,28 @@ const AnalyticsBarCharts = () => {
                 return;
             }
             try {
-                const response = await axios.get(`${backendUrl}/api/analytics/bar-data`, { headers: getAuthHeaders() });
+                // FIX: Corrected API path for bar chart data (was causing 404)
+                const response = await axios.get(`${backendUrl}/api/admin/analytics/bar-data`, { headers: getAuthHeaders() });
                 setChartData(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
+                // NOTE: This console.error was the one logging the 404 HTML body
                 console.error("Error fetching bar chart data:", error.response?.data || error.message);
                 setChartData([]);
             } finally {
                 setIsLoading(false);
             }
         };
+        // The dependency array only contains 'timeframe', but the fetch URL doesn't use it.
+        // If this component shares the same data as SideCards, remove 'timeframe' from the dependency array.
         fetchChartData();
-    }, [timeframe]);
+    }, [timeframe]); 
 
     return (
         <div className="card analytics-chart-card">
             <div className="analytics-header">
                 <h3>Order Analytics</h3>
                 <div className="timeframe-selector">
+                    {/* The timeframe selector currently only affects the state, not the API call for bar-data */}
                     <button className={`status-badge ${timeframe === 'weekly' ? 'active' : ''}`} onClick={() => setTimeframe('weekly')}>Weekly</button>
                     <button className={`status-badge ${timeframe === 'monthly' ? 'active' : ''}`} onClick={() => setTimeframe('monthly')}>Monthly</button>
                     <button className={`status-badge ${timeframe === 'yearly' ? 'active' : ''}`} onClick={() => setTimeframe('yearly')}>Yearly</button>
@@ -383,7 +394,8 @@ const AnalyticsBarCharts = () => {
             {isLoading ? (
                 <div className="loading-state"><div className="spinner"></div><p>Loading chart data...</p></div>
             ) : chartData.length > 0 ? (
-                <p className="chart-placeholder">Chart component for order data here...</p>
+                 // NOTE: Actual chart component (e.g., from Chart.js) must replace this placeholder
+                <p className="chart-placeholder">Chart component for order data here. Data points fetched: {chartData.length}</p>
             ) : (
                 <p className="chart-placeholder">No data available.</p>
             )}
@@ -414,7 +426,7 @@ class ErrorBoundary extends Component {
     }
 }
 
-// Main Dashboard Page Component
+// --- Main Dashboard Page Component ---
 const DashboardPage = () => {
     const [orders, setOrders] = useState([]);
     const [isLoadingOrders, setIsLoadingOrders] = useState(true);
@@ -434,6 +446,7 @@ const DashboardPage = () => {
             return;
         }
         try {
+            // NOTE: Assuming /api/orders is the correct authenticated endpoint for admin viewing
             const response = await axios.get(`${backendUrl}/api/orders`, { headers: getAuthHeaders() });
             setOrders(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
