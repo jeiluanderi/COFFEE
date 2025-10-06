@@ -15,8 +15,6 @@ const TestimonialSection = () => {
 
     const fetchTestimonials = async () => {
         try {
-            // Use the apiUrl variable that was declared outside the function.
-            // Do NOT re-declare it with `process.env` here.
             const response = await fetch(`${apiUrl}/api/testimonials`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -24,7 +22,8 @@ const TestimonialSection = () => {
             const data = await response.json();
             setTestimonials(data.map(t => ({
                 ...t,
-                imageSrc: t.image_url || `https://placehold.co/120x120/E8E2D7/4A2C2A?text=${t.client_name.charAt(0)}`,
+                // Use t.customer_name instead of t.client_name for placeholder image
+                imageSrc: t.image_url || `https://placehold.co/120x120/E8E2D7/4A2C2A?text=${(t.customer_name || '').charAt(0)}`,
                 id: t.id // Ensure ID exists for the key prop
             })));
         } catch (error) {
@@ -36,7 +35,6 @@ const TestimonialSection = () => {
     useEffect(() => {
         fetchTestimonials();
 
-        // This should check your auth context or local storage for a token
         const token = localStorage.getItem('token'); 
         setIsLoggedIn(!!token); 
     }, []);
@@ -221,20 +219,22 @@ const TestimonialSection = () => {
                                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                             >
                                 {testimonials.length > 0 ? (
-                                    testimonials.map((testimonial) => (
-                                        <div key={testimonial.id} style={{ minWidth: '100%' }}>
-                                            <div className="testimonial-item">
-                                                <img className="img-fluid" src={testimonial.imageSrc} alt={testimonial.clientName} />
-                                                <p className="fs-5">{testimonial.quote}</p>
-                                                <h4>{testimonial.clientName}</h4>
-                                                <span>{testimonial.profession}</span>
+                                        testimonials.map((testimonial) => (
+                                            <div key={testimonial.id} style={{ minWidth: '100%' }}>
+                                                <div className="testimonial-item">
+                                                    {/* Changed testimonial.clientName to testimonial.customer_name */}
+                                                    <img className="img-fluid" src={testimonial.imageSrc} alt={testimonial.customer_name} />
+                                                    <p className="fs-5">"{testimonial.quote}"</p> {/* Added quotes around quote */}
+                                                    {/* Changed testimonial.clientName to testimonial.customer_name */}
+                                                    <h4>{testimonial.customer_name}</h4>
+                                                    <span>{testimonial.profession}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        ))
                                 ) : (
-                                    <div style={{ minWidth: '100%' }}>
-                                        <p className="text-center">No testimonials found. Be the first to add one!</p>
-                                    </div>
+                                        <div style={{ minWidth: '100%' }}>
+                                            <p className="text-center">No testimonials found. Be the first to add one!</p>
+                                        </div>
                                 )}
                             </div>
                         </div>
@@ -267,9 +267,11 @@ const TestimonialSection = () => {
                         <h2 className="text-center display-5 mb-4" style={{ color: colors.dark }}>All Testimonials</h2>
                         {testimonials.map((testimonial) => (
                             <div key={testimonial.id} className="modal-testimonial-item">
-                                <img src={testimonial.imageSrc} alt={testimonial.clientName} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem' }} />
-                                <p className="text-center" style={{ color: colors.dark, fontSize: '1rem', lineHeight: '1.5' }}>{testimonial.quote}</p>
-                                <h4 className="mt-2" style={{ color: colors.dark, fontSize: '1.2rem' }}>{testimonial.clientName}</h4>
+                                {/* Changed testimonial.clientName to testimonial.customer_name */}
+                                <img src={testimonial.imageSrc} alt={testimonial.customer_name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem' }} />
+                                <p className="text-center" style={{ color: colors.dark, fontSize: '1rem', lineHeight: '1.5' }}>"{testimonial.quote}"</p> {/* Added quotes around quote */}
+                                {/* Changed testimonial.clientName to testimonial.customer_name */}
+                                <h4 className="mt-2" style={{ color: colors.dark, fontSize: '1.2rem' }}>{testimonial.customer_name}</h4>
                                 <span style={{ color: colors.secondary, fontStyle: 'italic' }}>{testimonial.profession}</span>
                             </div>
                         ))}

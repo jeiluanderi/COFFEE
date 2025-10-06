@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-// Placeholder for the background image. Replace with a valid URL or local asset in a real project.
+// Placeholder background image
 const backgroundImage = "https://res.cloudinary.com/dmranuiwo/image/upload/v1757076175/coff_to94lp.png";
 
-// The component now accepts `onLogin` as a prop from the parent App component
 const LoginPage = ({ onLogin }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -18,15 +17,16 @@ const LoginPage = ({ onLogin }) => {
         setIsError(false);
         setIsSubmitting(true);
 
-        const backendUrl = 'http://localhost:3001';
+        const backendUrl = "http://localhost:3001";
 
         try {
-            const response = await axios.post(`${backendUrl}/api/login`, { email, password });
+            // ✅ Updated URL to match backend
+            const response = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
 
             if (response.data.token) {
                 const userRole = response.data.user.role;
 
-                if (userRole !== 'admin') {
+                if (userRole !== "admin") {
                     setIsError(true);
                     setMessage("Access denied: Admins only.");
                     setIsSubmitting(false);
@@ -37,8 +37,6 @@ const LoginPage = ({ onLogin }) => {
                 localStorage.setItem("username", response.data.user.username);
                 localStorage.setItem("userRole", userRole);
 
-                // ⭐ THIS IS THE CRITICAL FIX ⭐
-                // We are now calling the 'onLogin' prop, passing the token back to the parent component.
                 if (onLogin) {
                     onLogin(response.data.token);
                 }
@@ -227,10 +225,9 @@ const LoginPage = ({ onLogin }) => {
                 }
                 `}
             </style>
+
             <div className="login-form-box">
-                <h1 className="login-title">
-                    Admin Login
-                </h1>
+                <h1 className="login-title">Admin Login</h1>
                 <form onSubmit={handleSubmit} className="login-form">
                     {message && (
                         <p className={`message-box ${isError ? "error-message" : "success-message"}`}>
@@ -257,12 +254,8 @@ const LoginPage = ({ onLogin }) => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="login-button"
-                    >
-                        {isSubmitting ? 'Processing...' : "Login"}
+                    <button type="submit" disabled={isSubmitting} className="login-button">
+                        {isSubmitting ? "Processing..." : "Login"}
                     </button>
                 </form>
             </div>

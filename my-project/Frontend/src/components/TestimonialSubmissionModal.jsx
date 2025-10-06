@@ -7,6 +7,7 @@ import { XCircle } from 'lucide-react';
 const TestimonialSubmissionModal = ({ isOpen, onClose, onSubmitted }) => {
     const [formData, setFormData] = useState({
         quote: '',
+        customer_name: '', // Changed 'name' to 'customer_name'
         profession: '',
         imageUrl: '',
     });
@@ -23,34 +24,31 @@ const TestimonialSubmissionModal = ({ isOpen, onClose, onSubmitted }) => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setStatus('Submitting...');
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-            const token = localStorage.getItem('token'); 
-            
-            await axios.post(
-                `${apiUrl}/api/testimonials`,
-                {
-                    quote: formData.quote,
-                    profession: formData.profession,
-                    imageUrl: formData.imageUrl,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+  e.preventDefault();
+  setStatus('Submitting...');
+  try {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-            setStatus('Your testimonial has been submitted for review! Thank you.');
-            setFormData({ quote: '', profession: '', imageUrl: '' });
-            
-            setTimeout(() => {
-                onClose();
-                onSubmitted();
-            }, 3000);
-        } catch (error) {
-            console.error('Submission error:', error);
-            setStatus('Failed to submit. Please ensure you are logged in and try again.');
-        }
-    };
+    await axios.post(`${apiUrl}/api/testimonials`, {
+      quote: formData.quote,
+      customer_name: formData.customer_name,
+      profession: formData.profession,
+      image_url: formData.imageUrl,  // ✅ match backend
+    });
+
+    setStatus('Your testimonial has been submitted for review! Thank you.');
+    setFormData({ quote: '', customer_name: '', profession: '', imageUrl: '' });
+
+    setTimeout(() => {
+      onClose();
+      onSubmitted();
+    }, 3000);
+  } catch (error) {
+    console.error('Submission error:', error);
+    setStatus('Failed to submit. Please try again.');
+  }
+};
+
 
     return (
         <div className="modal-overlay">
@@ -58,7 +56,19 @@ const TestimonialSubmissionModal = ({ isOpen, onClose, onSubmitted }) => {
                 <button className="modal-close" onClick={onClose}><XCircle /></button>
                 <h2 className="text-center font-bold">Submit Your Testimonial</h2>
                 <form onSubmit={handleSubmit} className="mt-4">
-                    <label htmlFor="quote" className="block mb-2">Your Story:</label>
+                    <label htmlFor="customer_name" className="block mb-2">Your Name (Optional):</label>
+                    <input
+                        type="text"
+                        id="customer_name"
+                        name="customer_name" // Changed name attribute to customer_name
+                        value={formData.customer_name}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded-md"
+                        placeholder="e.g., Jane Doe"
+                        // Note: required is omitted here because the field is optional
+                    />
+
+                    <label htmlFor="quote" className="block mb-2 mt-4">Your Story:</label>
                     <textarea
                         id="quote"
                         name="quote"
@@ -135,47 +145,47 @@ const TestimonialSubmissionModal = ({ isOpen, onClose, onSubmitted }) => {
                     text-align: center;
                 }
                 .font-bold {
-                    font-weight: bold;
+                        font-weight: bold;
                 }
                 .mt-4 {
-                    margin-top: 1rem;
+                        margin-top: 1rem;
                 }
                 .w-full {
-                    width: 100%;
+                        width: 100%;
                 }
                 .p-2 {
-                    padding: 0.5rem;
+                        padding: 0.5rem;
                 }
                 .border {
-                    border: 1px solid #ccc;
+                        border: 1px solid #ccc;
                 }
                 .rounded-md {
-                    border-radius: 0.375rem;
+                        border-radius: 0.375rem;
                 }
                 .btn {
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 0.5rem;
-                    font-weight: bold;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 0.5rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: background-color 0.3s ease;
                 }
                 .btn:hover {
-                    opacity: 0.9;
+                        opacity: 0.9;
                 }
                 .block {
-                    display: block;
+                        display: block;
                 }
                 .mb-2 {
-                    margin-bottom: 0.5rem;
+                        margin-bottom: 0.5rem;
                 }
                 .mt-2 {
-                    margin-top: 0.5rem;
+                        margin-top: 0.5rem;
                 }
                 .text-sm {
-                    font-size: 0.875rem;
+                        font-size: 0.875rem;
                 }
                 .text-white {
-                    color: white;
+                        color: white;
                 }
             `}</style>
         </div>

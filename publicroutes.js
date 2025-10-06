@@ -189,33 +189,33 @@ router.get('/testimonials', async (req, res) => {
 // =======================
 // POST /testimonials (Authenticated User Submission)
 // =======================
-
-// POST /testimonials (Public Submission, no auth required)
-// =======================
-router.post('/testimonials', async (req, res) => {
-    const { customer_name, profession, quote, image_url } = req.body;
-
+router.post('/testimonials', authenticateToken, async (req, res) => {
+    const { quote, profession, imageUrl } = req.body; 
+    const user = req.user;
+    
+    // LOG EVERYTHING
     console.log("Request body:", req.body);
+    console.log("Authenticated user:", user);
+
+    if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+    }
 
     try {
         const newTestimonial = await pool.query(
-            `INSERT INTO testimonials 
-             (customer_name, profession, quote, image_url, status) 
-             VALUES ($1, $2, $3, $4, 'pending') RETURNING *`,
-            [customer_name || '', profession, quote, image_url]
-        );
+  `INSERT INTO testimonials 
+   (quote, customer_name, profession, image_url, user_id) 
+   VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+  [quote, user.username, profession, imageUrl, user.id]
+);
 
         console.log("Inserted testimonial:", newTestimonial.rows[0]);
-        res.status(201).json({ 
-            message: 'Testimonial submitted successfully and is pending approval.',
-            testimonial: newTestimonial.rows[0]
-        });
+        res.status(201).json({ message: 'Testimonial submitted successfully and is pending approval.' });
     } catch (err) {
-        console.error('Error submitting testimonial:', err);
+        console.error('Error submitting testimonial (full error):', err);
         res.status(500).json({ message: 'Failed to submit testimonial.', error: err.message });
     }
 });
-
 
 
 // =======================
